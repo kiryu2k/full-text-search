@@ -1,0 +1,15 @@
+# Build results
+
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+build_*/
+[Bb]in/
+[Oo]bj/
+
+# CMake
+cmake-build-*/
+
+# Visual Studio Code
+.vscode/
