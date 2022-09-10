@@ -1,14 +1,12 @@
-enable_testing()
-
 set(target_name math_test)
 
-add_executable(${target_name} main.cpp libmath/sum.test.cpp)
+add_executable(${target_name} libmath/sum.test.cpp)
 
 target_link_libraries(
   ${target_name}
   PRIVATE
     math_lib
-    gtest
+    gtest_main
 )
 
 include(GoogleTest)

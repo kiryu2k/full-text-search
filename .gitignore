@@ -7,6 +7,7 @@ build/
 build_*/
 [Bb]in/
 [Oo]bj/
+[Tt]esting/
 
 # CMake
 cmake-build-*/
