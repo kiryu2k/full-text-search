@@ -2,17 +2,17 @@
 ## Out-of-source build be like:
 ### Конфигурация
 ```
-cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-cmake -S . -B build/Release -DCMAKE_BUILD_TYPE=Release
+cmake --preset debug
+cmake --preset release
 ```
 ### Сборка
 ```
-cmake --build build/Debug
-cmake --build build/Release
+cmake --build --preset debug
+cmake --build --preset release
 ```
 ### Очистка
 ```
-cmake --build build/Debug --target clean
-cmake --build build/Release --target clean
+cmake --build build/debug --target clean
+cmake --build build/release --target clean
 rm -rf build
 ```
