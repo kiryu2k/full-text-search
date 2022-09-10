@@ -8,7 +8,7 @@
     "configurePresets": [
         {
             "name": "base",
-            "generator": "Ninja",
+            "generator": "Unix Makefiles",
             "hidden": true
         },
         {
