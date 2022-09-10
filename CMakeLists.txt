@@ -20,6 +20,7 @@ else()
   message("clang-tidy found:\n" ${CLANG_TIDY_VERSION})
 endif()
 
+enable_testing()
 
 include_directories(include)
 
