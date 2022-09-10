@@ -12,7 +12,8 @@ Checks: '
   -google-runtime-references,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-avoid-magic-number,
-  -readability-magic-numbers
+  -readability-magic-numbers,
+  -bugprone-exception-escape
   '
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
