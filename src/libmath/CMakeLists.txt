@@ -2,6 +2,7 @@ set(target_name math_lib)
 
 add_library(${target_name} STATIC
   sum.cpp
+  ${PROJECT_SOURCE_DIR}/include/libmath/sum.hpp
   )
 
 include(CompileOptions)
