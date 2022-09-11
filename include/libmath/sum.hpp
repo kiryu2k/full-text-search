@@ -2,6 +2,6 @@
 
 namespace math {
 
-double sum(double, double);
+double sum(double first, double second);
 
 } // namespace math
