@@ -15,8 +15,8 @@ Checks: '
   -readability-magic-numbers,
   -bugprone-exception-escape
   '
-WarningsAsErrors: ''
-HeaderFilterRegex: ''
+WarningsAsErrors: true
+HeaderFilterRegex: '.*/(libmath|sum-cli)/'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            kirrryu
