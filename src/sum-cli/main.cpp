@@ -1,8 +1,9 @@
+#include <libmath/sum.hpp>
+
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
 #include <fmt/core.h>
-#include <libmath/sum.hpp>
 
 int main(int argc, char **argv) {
     CLI::App app{"wow, it's working!!"};
