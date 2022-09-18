@@ -14,7 +14,7 @@ target_sources(
 target_link_libraries(
   ${target_name}
   PRIVATE
-    math_lib
+    fts
     CLI11
     fmt
 )
