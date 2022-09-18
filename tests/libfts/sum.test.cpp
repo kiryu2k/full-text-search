@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <libmath/sum.hpp>
+#include <libfts/parser.hpp>
 
 TEST(sumTest, testSum) {
     EXPECT_DOUBLE_EQ(math::sum(16, 8.55), 24.55);
