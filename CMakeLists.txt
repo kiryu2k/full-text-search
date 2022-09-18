@@ -20,10 +20,10 @@ else()
   message("clang-tidy found:\n" ${CLANG_TIDY_VERSION})
 endif()
 
-# enable_testing()
+enable_testing()
 
 option(BUILD_GMOCK "Builds the googlemock subproject" OFF)
 
 add_subdirectory(src)
-# add_subdirectory(tests)
+add_subdirectory(tests)
 add_subdirectory(external)

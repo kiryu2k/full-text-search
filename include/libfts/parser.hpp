@@ -13,7 +13,7 @@ struct ParserConfiguration {
     size_t max_ngram_length_;
 
     void init(
-        std::string filename,
+        const std::string &filename,
         size_t min_ngram_length,
         size_t max_ngram_length) {
         std::ifstream file(filename);
