@@ -10,7 +10,8 @@ int main() {
         "yOu aRE such a @#!k. I can't understand yOU ANYmore!!((((((";
     libfts::ParserConfiguration config;
     config.init("stopwords.dat", c_min_ngram_length, c_max_ngram_length);
-    std::multimap<int, std::string> result = libfts::parse(text, config);
+    std::multimap<libfts::Position, libfts::Ngram> result =
+        libfts::parse(text, config);
     libfts::print_ngrams(result);
     return 0;
 }
