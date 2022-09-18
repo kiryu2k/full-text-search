@@ -13,7 +13,8 @@ Checks: '
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-avoid-magic-number,
   -readability-magic-numbers,
-  -bugprone-exception-escape
+  -bugprone-exception-escape,
+  -altera-*
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libmath|sum-cli)/'
