@@ -1,14 +1,14 @@
-set(target_name fts_test)
+# set(target_name fts_test)
 
-add_executable(${target_name} libfts/parser.test.cpp)
+# add_executable(${target_name} libfts/parser.test.cpp)
 
-target_link_libraries(
-  ${target_name}
-  PRIVATE
-    fts
-    gtest_main
-)
+# target_link_libraries(
+#   ${target_name}
+#   PRIVATE
+#     fts
+#     gtest_main
+# )
 
-include(GoogleTest)
+# include(GoogleTest)
 
-gtest_discover_tests(${target_name})
+# gtest_discover_tests(${target_name})
