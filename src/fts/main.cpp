@@ -1,17 +1,17 @@
 #include <libfts/parser.hpp>
 
-/* until the parser configuration file is ready, I added global constants to
- * change some parser parameters */
-const size_t c_min_ngram_length = 3;
-const size_t c_max_ngram_length = 7;
+#include <iostream>
 
 int main() {
     std::string text =
         "yOu aRE such a @#!k. I can't understand yOU ANYmore!!((((((";
     libfts::ParserConfiguration config;
-    config.init("stopwords.dat", c_min_ngram_length, c_max_ngram_length);
+    if (config.get_parser_result() != "successful") {
+        std::cout << config.get_parser_result() << "\n";
+        return -1;
+    }
     std::multimap<libfts::Position, libfts::Ngram> result =
         libfts::parse(text, config);
-    libfts::print_ngrams(result);
+    std::cout << libfts::get_string_ngrams(result) << "\n";
     return 0;
 }
