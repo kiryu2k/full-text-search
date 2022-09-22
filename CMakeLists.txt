@@ -25,5 +25,5 @@ enable_testing()
 option(BUILD_GMOCK "Builds the googlemock subproject" OFF)
 
 add_subdirectory(src)
-# add_subdirectory(tests)
+add_subdirectory(tests)
 add_subdirectory(external)
