@@ -1,8 +1,8 @@
-set(target_name math_lib)
+set(target_name fts)
 
 add_library(${target_name} STATIC
-  sum.cpp
-  ${PROJECT_SOURCE_DIR}/include/libmath/sum.hpp
+  parser.cpp
+  ${PROJECT_SOURCE_DIR}/include/libfts/parser.hpp
   )
 
 include(CompileOptions)
@@ -12,4 +12,10 @@ target_include_directories(
   ${target_name}
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(
+  ${target_name}
+  PRIVATE
+    nlohmann_json
 )

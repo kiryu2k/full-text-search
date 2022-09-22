@@ -1,11 +1,11 @@
-set(target_name math_test)
+set(target_name fts_test)
 
-add_executable(${target_name} libmath/sum.test.cpp)
+add_executable(${target_name} libfts/parser.test.cpp)
 
 target_link_libraries(
   ${target_name}
   PRIVATE
-    math_lib
+    fts
     gtest_main
 )
 
