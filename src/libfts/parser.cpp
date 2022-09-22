@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
-#include <iostream>
+#include <fstream>
 #include <vector>
 
 namespace libfts {
