@@ -13,27 +13,32 @@ ParserConfiguration::ParserConfiguration(const std::string &filename) {
     std::ifstream file(filename);
     nlohmann::json config = nlohmann::json::parse(file, nullptr, false);
     if (config.is_discarded()) {
-        parse_result = "parse error: incorrect configuration format";
+        parse_result_ = "parse error: incorrect configuration format";
     } else if (
-        config["minimum ngram length"].get<int>() < 0 ||
-        config["maximum ngram length"].get<int>() < 0) {
-        parse_result = "parse error: ngram lengths must be unsigned integers";
+        config["minimum_ngram_length"].get<int>() < 0 ||
+        config["maximum_ngram_length"].get<int>() < 0) {
+        parse_result_ = "parse error: ngram lengths must be unsigned integers";
     } else if (
-        config["minimum ngram length"].get<int>() >
-        config["maximum ngram length"].get<int>()) {
-        parse_result = "parse error: maximum ngram length must be greater "
-                       "than minimum ngram length";
+        config["minimum_ngram_length"].get<int>() >
+        config["maximum_ngram_length"].get<int>()) {
+        parse_result_ = "parse error: maximum ngram length must be greater "
+                        "than minimum ngram length";
     } else {
-        min_ngram_length_ = config["minimum ngram length"].get<size_t>();
-        max_ngram_length_ = config["maximum ngram length"].get<size_t>();
-        stop_words_ = config["stop words"].get<std::set<std::string>>();
-        parse_result = "successful";
+        min_ngram_length_ = config["minimum_ngram_length"].get<size_t>();
+        max_ngram_length_ = config["maximum_ngram_length"].get<size_t>();
+        stop_words_ = config["stop_words"].get<std::set<std::string>>();
+        parse_result_ = "successful";
     }
     file.close();
 }
 
 static void remove_punct(std::string &str) {
-    str.erase(std::remove_if(str.begin(), str.end(), ::ispunct), str.end());
+    str.erase(
+        std::remove_if(
+            str.begin(),
+            str.end(),
+            [](unsigned char chr) { return ispunct(chr); }),
+        str.end());
 }
 
 static void string_to_lower(std::string &str) {
@@ -43,26 +48,28 @@ static void string_to_lower(std::string &str) {
 }
 
 static std::vector<std::string> split_string(std::string &str) {
-    std::vector<std::string> arr;
+    std::vector<std::string> words;
     auto first = std::find_if_not(str.begin(), str.end(), isspace);
-    while (first != std::end(str)) {
+    while (first != str.end()) {
         auto last = std::find_if(first, str.end(), isspace);
-        std::string tmp = str.substr(first - str.begin(), last - first);
-        arr.push_back(tmp);
+        std::string word = str.substr(first - str.begin(), last - first);
+        words.push_back(word);
         first = std::find_if_not(last, str.end(), isspace);
     }
-    return arr;
+    return words;
 }
 
 static std::vector<std::string> remove_stop_words(
     const std::vector<std::string> &text,
     const std::set<std::string> &stop_words) {
     std::vector<std::string> text_without_stop_words;
-    for (const auto &word : text) {
-        if (stop_words.find(word) == stop_words.end()) {
-            text_without_stop_words.push_back(word);
-        }
-    }
+    std::copy_if(
+        text.begin(),
+        text.end(),
+        std::back_inserter(text_without_stop_words),
+        [&stop_words](const std::string &word) {
+            return stop_words.find(word) == stop_words.end();
+        });
     return text_without_stop_words;
 }
 
