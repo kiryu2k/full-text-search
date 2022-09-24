@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace libfts {
 
@@ -22,12 +23,14 @@ public:
     std::string get_parser_result() { return parse_result_; }
 };
 
-using Position = int;
-using Ngram = std::string;
+struct ParsedString {
+    size_t text_position_;
+    std::vector<std::string> ngrams_;
+};
 
-std::multimap<Position, Ngram>
+std::vector<ParsedString>
 parse(std::string text, const ParserConfiguration &config);
 
-std::string get_string_ngrams(const std::multimap<Position, Ngram> &ngrams);
+std::string get_string_ngrams(const std::vector<ParsedString> &words);
 
 } // namespace libfts

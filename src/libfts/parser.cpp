@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
-#include <vector>
 
 namespace libfts {
 
@@ -73,36 +72,44 @@ static std::vector<std::string> remove_stop_words(
     return text_without_stop_words;
 }
 
-static std::multimap<int, std::string> generate_ngrams(
+static std::vector<ParsedString> generate_ngrams(
     const std::vector<std::string> &words, const ParserConfiguration &config) {
-    std::multimap<int, std::string> ngrams;
+    std::vector<ParsedString> parsed_query;
     for (size_t i = 0; i < words.size(); ++i) {
+        ParsedString word;
         for (size_t j = config.get_min_ngram_length();
              j <= config.get_max_ngram_length();
              ++j) {
             if (words[i].length() < j) {
                 break;
             }
-            ngrams.insert({i, words[i].substr(0, j)});
+            word.ngrams_.push_back(words[i].substr(0, j));
+        }
+        if (!word.ngrams_.empty()) {
+            word.text_position_ = i;
+            parsed_query.push_back(word);
         }
     }
-    return ngrams;
+    return parsed_query;
 }
 
-std::multimap<Position, Ngram>
+std::vector<ParsedString>
 parse(std::string text, const ParserConfiguration &config) {
     remove_punct(text);
     string_to_lower(text);
     std::vector<std::string> words = split_string(text);
     words = remove_stop_words(words, config.get_stop_words());
-    std::multimap<Position, Ngram> ngrams = generate_ngrams(words, config);
-    return ngrams;
+    std::vector<ParsedString> parsed_query = generate_ngrams(words, config);
+    return parsed_query;
 }
 
-std::string get_string_ngrams(const std::multimap<Position, Ngram> &ngrams) {
+std::string get_string_ngrams(const std::vector<ParsedString> &words) {
     std::string string_ngrams;
-    for (const auto &[position, ngram] : ngrams) {
-        string_ngrams += ngram + " " + std::to_string(position) + " ";
+    for (const auto &word : words) {
+        size_t pos = word.text_position_;
+        for (const auto &ngram : word.ngrams_) {
+            string_ngrams += ngram + " " + std::to_string(pos) + " ";
+        }
     }
     return string_ngrams;
 }

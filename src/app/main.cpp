@@ -20,8 +20,7 @@ int main(int argc, char **argv) {
         fmt::print("{}\n", config.get_parser_result());
         return -1;
     }
-    std::multimap<libfts::Position, libfts::Ngram> result =
-        libfts::parse(text, config);
+    std::vector<libfts::ParsedString> result = libfts::parse(text, config);
     fmt::print("{}\n", libfts::get_string_ngrams(result));
     return 0;
 }
