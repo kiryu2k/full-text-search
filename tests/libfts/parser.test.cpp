@@ -48,16 +48,16 @@ TEST(ParserTest, ParseTypicalText) {
         libfts::ParserConfiguration config =
             libfts::load_config("../../../ParserConfig.json");
         std::vector<libfts::ParsedString> result = libfts::parse(text, config);
-        EXPECT_EQ(result.size(), 13);
         int i = 0, j = 0;
         for (const auto &word : result) {
             for (const auto &ngram : word.ngrams_) {
-                EXPECT_EQ(ngram, expected_ngrams[i]);
+                EXPECT_EQ(ngram, expected_ngrams[j]);
                 ++j;
             }
             EXPECT_EQ(word.text_position_, expected_positions[i]);
             ++i;
         }
+        EXPECT_EQ(result.size(), i);
         std::string expected_string_ngrams =
             "lif 0 life 0 lon 1 long 1 les 2 less 2 lesso 2 lesson 2 hum 3 "
             "humi 3 humil 3 humili 3 humilit 3 ";
