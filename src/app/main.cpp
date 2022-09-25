@@ -5,6 +5,18 @@
 #include <CLI/Formatter.hpp>
 #include <fmt/core.h>
 
+static std::string
+get_string_ngrams(const std::vector<libfts::ParsedString> &words) {
+    std::string string_ngrams;
+    for (const auto &word : words) {
+        size_t pos = word.text_position_;
+        for (const auto &ngram : word.ngrams_) {
+            string_ngrams += ngram + " " + std::to_string(pos) + " ";
+        }
+    }
+    return string_ngrams;
+}
+
 int main(int argc, char **argv) {
     CLI::App app{"wow, it's working!!"};
     std::string text;
@@ -15,13 +27,13 @@ int main(int argc, char **argv) {
             "wrong command line arguments\ntry this: ./app --text [string]\n");
         return -1;
     }
-    libfts::ParserConfiguration config;
-    if (config.get_parser_result() != "successful") {
-        fmt::print("{}\n", config.get_parser_result());
+    try {
+        libfts::ParserConfiguration config = libfts::load_config();
+        std::vector<libfts::ParsedString> result = libfts::parse(text, config);
+        fmt::print("{}\n", get_string_ngrams(result));
+    } catch (libfts::ConfigurationException &ex) {
+        fmt::print("parse error: {}\n", ex.what());
         return -1;
-    }
-    std::multimap<libfts::Position, libfts::Ngram> result =
-        libfts::parse(text, config);
-    fmt::print("{}\n", libfts::get_string_ngrams(result));
+    };
     return 0;
 }

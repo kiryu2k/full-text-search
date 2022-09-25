@@ -1,5 +1,5 @@
 {
-    "stop words": [
+    "stop_words": [
         "a",
         "an",
         "and",
@@ -36,6 +36,6 @@
         "will",
         "with"
     ],
-    "minimum ngram length": 3,
-    "maximum ngram length": 7
+    "minimum_ngram_length": 3,
+    "maximum_ngram_length": 7
 }
