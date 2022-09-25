@@ -111,15 +111,4 @@ parse(std::string text, const ParserConfiguration &config) {
     return parsed_query;
 }
 
-std::string get_string_ngrams(const std::vector<ParsedString> &words) {
-    std::string string_ngrams;
-    for (const auto &word : words) {
-        size_t pos = word.text_position_;
-        for (const auto &ngram : word.ngrams_) {
-            string_ngrams += ngram + " " + std::to_string(pos) + " ";
-        }
-    }
-    return string_ngrams;
-}
-
 } // namespace libfts

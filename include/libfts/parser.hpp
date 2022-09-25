@@ -40,6 +40,4 @@ load_config(const std::string &filename = "ParserConfig.json");
 std::vector<ParsedString>
 parse(std::string text, const ParserConfiguration &config);
 
-std::string get_string_ngrams(const std::vector<ParsedString> &words);
-
 } // namespace libfts
