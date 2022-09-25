@@ -15,12 +15,13 @@ int main(int argc, char **argv) {
             "wrong command line arguments\ntry this: ./app --text [string]\n");
         return -1;
     }
-    libfts::ParserConfiguration config;
-    if (config.get_parser_result() != "successful") {
-        fmt::print("{}\n", config.get_parser_result());
+    try {
+        libfts::ParserConfiguration config = libfts::load_config();
+        std::vector<libfts::ParsedString> result = libfts::parse(text, config);
+        fmt::print("{}\n", libfts::get_string_ngrams(result));
+    } catch (libfts::ConfigurationException &ex) {
+        std::cerr << "parse error: " << ex.what() << "\n";
         return -1;
-    }
-    std::vector<libfts::ParsedString> result = libfts::parse(text, config);
-    fmt::print("{}\n", libfts::get_string_ngrams(result));
+    };
     return 0;
 }

@@ -8,27 +8,35 @@
 
 namespace libfts {
 
-ParserConfiguration::ParserConfiguration(const std::string &filename) {
+ParserConfiguration::ParserConfiguration(
+    std::set<std::string> stop_words,
+    size_t min_ngram_length,
+    size_t max_ngram_length)
+    : stop_words_{std::move(stop_words)}, min_ngram_length_{min_ngram_length},
+      max_ngram_length_{max_ngram_length} {}
+
+ParserConfiguration load_config(const std::string &filename) {
     std::ifstream file(filename);
     nlohmann::json config = nlohmann::json::parse(file, nullptr, false);
     if (config.is_discarded()) {
-        parse_result_ = "parse error: incorrect configuration format";
-    } else if (
-        config["minimum_ngram_length"].get<int>() < 0 ||
-        config["maximum_ngram_length"].get<int>() < 0) {
-        parse_result_ = "parse error: ngram lengths must be unsigned integers";
-    } else if (
-        config["minimum_ngram_length"].get<int>() >
-        config["maximum_ngram_length"].get<int>()) {
-        parse_result_ = "parse error: maximum ngram length must be greater "
-                        "than minimum ngram length";
-    } else {
-        min_ngram_length_ = config["minimum_ngram_length"].get<size_t>();
-        max_ngram_length_ = config["maximum_ngram_length"].get<size_t>();
-        stop_words_ = config["stop_words"].get<std::set<std::string>>();
-        parse_result_ = "successful";
+        throw ConfigurationException("incorrect configuration format");
     }
+    auto min_length = config["minimum_ngram_length"].get<int>();
+    auto max_length = config["maximum_ngram_length"].get<int>();
+    if (min_length < 0 || max_length < 0) {
+        throw ConfigurationException("ngram lengths must be unsigned integers");
+    }
+    if (min_length >= max_length) {
+        throw ConfigurationException(
+            "maximum ngram length must be greater than minimum ngram length");
+    }
+    auto min_ngram_length = config["minimum_ngram_length"].get<size_t>();
+    auto max_ngram_length = config["maximum_ngram_length"].get<size_t>();
+    auto stop_words = config["stop_words"].get<std::set<std::string>>();
     file.close();
+    ParserConfiguration parser_config(
+        stop_words, min_ngram_length, max_ngram_length);
+    return parser_config;
 }
 
 static void remove_punct(std::string &str) {
