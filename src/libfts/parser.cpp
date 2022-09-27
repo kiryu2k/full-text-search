@@ -41,7 +41,7 @@ static void remove_punct(std::string &str) {
         std::remove_if(
             str.begin(),
             str.end(),
-            [](unsigned char chr) { return ispunct(chr); }),
+            [](unsigned char chr) { return std::ispunct(chr); }),
         str.end());
 }
 
