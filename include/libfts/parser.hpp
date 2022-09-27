@@ -20,7 +20,7 @@ private:
     size_t max_ngram_length_;
 
 public:
-    explicit ParserConfiguration(
+    ParserConfiguration(
         std::set<std::string> stop_words,
         size_t min_ngram_length,
         size_t max_ngram_length);
