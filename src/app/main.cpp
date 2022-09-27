@@ -20,11 +20,11 @@ get_string_ngrams(const std::vector<libfts::ParsedString> &words) {
 int main(int argc, char **argv) {
     CLI::App app{"wow, it's working!!"};
     std::string text;
-    app.add_option<std::string>("--text", text, "text");
+    app.add_option<std::string>("-t,--text", text, "Parse typed text")
+        ->required();
     CLI11_PARSE(app, argc, argv);
     if (app.count("--text") != 1) {
-        fmt::print(
-            "wrong command line arguments\ntry this: ./app --text [string]\n");
+        fmt::print("{}", app.help());
         return -1;
     }
     try {
