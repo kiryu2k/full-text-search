@@ -13,7 +13,12 @@ ParserConfiguration::ParserConfiguration(
     size_t min_ngram_length,
     size_t max_ngram_length)
     : stop_words_{std::move(stop_words)}, min_ngram_length_{min_ngram_length},
-      max_ngram_length_{max_ngram_length} {}
+      max_ngram_length_{max_ngram_length} {
+    if (min_ngram_length >= max_ngram_length) {
+        throw ConfigurationException(
+            "maximum ngram length must be greater than minimum ngram length");
+    }
+}
 
 ParserConfiguration load_config(const std::string &filename) {
     std::ifstream file(filename);
@@ -21,22 +26,14 @@ ParserConfiguration load_config(const std::string &filename) {
     if (config.is_discarded()) {
         throw ConfigurationException("incorrect configuration format");
     }
-    auto min_length = config["minimum_ngram_length"].get<int>();
-    auto max_length = config["maximum_ngram_length"].get<int>();
-    if (min_length < 0 || max_length < 0) {
+    auto min_ngram_length = config["minimum_ngram_length"].get<int>();
+    auto max_ngram_length = config["maximum_ngram_length"].get<int>();
+    if (min_ngram_length < 0 || max_ngram_length < 0) {
         throw ConfigurationException("ngram lengths must be unsigned integers");
     }
-    if (min_length >= max_length) {
-        throw ConfigurationException(
-            "maximum ngram length must be greater than minimum ngram length");
-    }
-    auto min_ngram_length = config["minimum_ngram_length"].get<size_t>();
-    auto max_ngram_length = config["maximum_ngram_length"].get<size_t>();
     auto stop_words = config["stop_words"].get<std::set<std::string>>();
-    file.close();
-    ParserConfiguration parser_config(
-        stop_words, min_ngram_length, max_ngram_length);
-    return parser_config;
+    return {
+        ParserConfiguration(stop_words, min_ngram_length, max_ngram_length)};
 }
 
 static void remove_punct(std::string &str) {
