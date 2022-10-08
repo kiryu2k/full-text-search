@@ -2,7 +2,9 @@ set(target_name fts)
 
 add_library(${target_name} STATIC
   parser.cpp
+  indexer.cpp
   ${PROJECT_SOURCE_DIR}/include/libfts/parser.hpp
+  ${PROJECT_SOURCE_DIR}/include/libfts/indexer.hpp
   )
 
 include(CompileOptions)
@@ -18,4 +20,5 @@ target_link_libraries(
   ${target_name}
   PRIVATE
     nlohmann_json
+    # picosha2
 )
