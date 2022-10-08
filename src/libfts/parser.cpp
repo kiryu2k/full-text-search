@@ -26,14 +26,13 @@ ParserConfiguration load_config(const std::string &filename) {
     if (config.is_discarded()) {
         throw ConfigurationException("incorrect configuration format");
     }
-    auto min_ngram_length = config["minimum_ngram_length"].get<int>();
-    auto max_ngram_length = config["maximum_ngram_length"].get<int>();
+    const auto min_ngram_length = config["minimum_ngram_length"].get<int>();
+    const auto max_ngram_length = config["maximum_ngram_length"].get<int>();
     if (min_ngram_length < 0 || max_ngram_length < 0) {
         throw ConfigurationException("ngram lengths must be unsigned integers");
     }
-    auto stop_words = config["stop_words"].get<std::set<std::string>>();
-    return {
-        ParserConfiguration(stop_words, min_ngram_length, max_ngram_length)};
+    const auto stop_words = config["stop_words"].get<std::set<std::string>>();
+    return ParserConfiguration(stop_words, min_ngram_length, max_ngram_length);
 }
 
 static void remove_punct(std::string &str) {

@@ -11,10 +11,6 @@ int main(int argc, char **argv) {
     app.add_option<std::string>("-t,--text", text, "Parse typed text")
         ->required();
     CLI11_PARSE(app, argc, argv);
-    if (app.count("--text") != 1) {
-        fmt::print("{}", app.help());
-        return -1;
-    }
     try {
         libfts::ParserConfiguration config = libfts::load_config();
         std::vector<libfts::ParsedString> result = libfts::parse(text, config);
