@@ -1,5 +1,7 @@
 #include <libfts/indexer.hpp>
 
+#include <picosha2/picosha2.h>
+
 #include <iostream>
 
 namespace libfts {

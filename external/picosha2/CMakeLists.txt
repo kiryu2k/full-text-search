@@ -1,10 +1,9 @@
-include(FetchContent)
+set(target_name picosha2)
 
-FetchContent_Declare(
-    picosha2
-    GIT_REPOSITORY https://github.com/okdshin/PicoSHA2.git
-    GIT_TAG v1.0.0
-    GIT_SHALLOW TRUE
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+add_library(${target_name} STATIC
+  picosha2.h
+  )
 
-FetchContent_MakeAvailable(picosha2)
+include(CompileOptions)
+set_compile_options(${target_name})
+set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)

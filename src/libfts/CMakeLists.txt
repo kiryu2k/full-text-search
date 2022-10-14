@@ -14,11 +14,12 @@ target_include_directories(
   ${target_name}
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/external
 )
 
 target_link_libraries(
   ${target_name}
   PRIVATE
     nlohmann_json
-    # picosha2
+    picosha2
 )
