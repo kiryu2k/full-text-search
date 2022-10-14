@@ -15,7 +15,7 @@ using term = std::string;
 using doc = std::string;
 
 class Index {
-public:
+protected:
     std::map<doc_id, doc> docs_;
     std::map<term, entry> entries_;
 
@@ -23,6 +23,8 @@ public:
     Index() = default;
     Index(std::map<doc_id, doc> docs, std::map<term, entry> entries)
         : docs_(std::move(docs)), entries_(std::move(entries)) {}
+    std::map<doc_id, doc> get_docs() const { return docs_; }
+    std::map<term, entry> get_entries() const { return entries_; }
 };
 
 class IndexBuilder : public Index {
@@ -34,9 +36,9 @@ public:
     Index index();
 };
 
-class TextIndexWriter {
-public:
-    void write(std::string path, Index index);
+struct TextIndexWriter {
+    const size_t FIRST_THREE_BYTES = 6;
+    void write(const std::string &path, const Index &index) const;
 };
 
 } // namespace libfts
