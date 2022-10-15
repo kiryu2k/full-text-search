@@ -14,8 +14,10 @@ using entry = std::map<doc_id, pos>;
 using term = std::string;
 using doc = std::string;
 
+class IndexBuilder;
+
 class Index {
-protected:
+    friend IndexBuilder;
     std::map<doc_id, doc> docs_;
     std::map<term, entry> entries_;
 
@@ -27,17 +29,19 @@ public:
     std::map<term, entry> get_entries() const { return entries_; }
 };
 
-class IndexBuilder : public Index {
+class IndexBuilder {
+    Index index_;
+
 public:
     void add_document(
         size_t document_id,
         const std::string &text,
         const ParserConfiguration &config);
-    Index index();
+    Index get_index() { return {index_.docs_, index_.entries_}; }
 };
 
 struct TextIndexWriter {
-    const size_t FIRST_THREE_BYTES = 6;
+    const size_t FIRST_NECESSARY_BYTES = 6;
     void write(const std::string &path, const Index &index) const;
 };
 
