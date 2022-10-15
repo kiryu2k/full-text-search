@@ -43,10 +43,10 @@ public:
 };
 
 struct TextIndexWriter {
-    void write(const std::string &path, const Index &index) const;
+    static void write(const std::string &path, const Index &index);
 };
 
-std::string generate_hash(std::string term);
+std::string generate_hash(const std::string &term);
 void parse_entry(const std::string &path, std::map<term, entry> &entries);
 
 } // namespace libfts

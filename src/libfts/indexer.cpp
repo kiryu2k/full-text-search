@@ -37,7 +37,7 @@ static std::string convert_entries(const term &term, const entry &entry) {
     return result;
 }
 
-void TextIndexWriter::write(const std::string &path, const Index &index) const {
+void TextIndexWriter::write(const std::string &path, const Index &index) {
     std::filesystem::create_directories(path + "docs/");
     std::filesystem::create_directories(path + "entries/");
     for (const auto &[docs_id, docs] : index.get_docs()) {
@@ -52,7 +52,7 @@ void TextIndexWriter::write(const std::string &path, const Index &index) const {
     }
 }
 
-std::string generate_hash(std::string term) {
+std::string generate_hash(const std::string &term) {
     std::string hash_hex_term;
     picosha2::hash256_hex_string(term, hash_hex_term);
     hash_hex_term.resize(FIRST_NECESSARY_BYTES);
