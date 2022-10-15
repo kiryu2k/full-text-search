@@ -1,3 +1,4 @@
+#include <libfts/absolutepath.hpp>
 #include <libfts/parser.hpp>
 
 #include <gtest/gtest.h>
@@ -18,7 +19,7 @@ TEST(ParserTest, ParseTextWithSpaces) {
     try {
         std::string text = "                \t";
         libfts::ParserConfiguration config =
-            libfts::load_config("../../../ParserConfig.json");
+            libfts::load_config(ABSOLUTE_PATH + "/ParserConfig.json");
         std::vector<libfts::ParsedString> result = libfts::parse(text, config);
         EXPECT_EQ(result.size(), 0);
         std::string expected_string_ngrams = "";
@@ -46,7 +47,7 @@ TEST(ParserTest, ParseTypicalText) {
             "humilit"};
         int expected_positions[] = {0, 1, 2, 3};
         libfts::ParserConfiguration config =
-            libfts::load_config("../../../ParserConfig.json");
+            libfts::load_config(ABSOLUTE_PATH + "/ParserConfig.json");
         std::vector<libfts::ParsedString> result = libfts::parse(text, config);
         int i = 0, j = 0;
         for (const auto &word : result) {
