@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 namespace libfts {
 
@@ -11,11 +12,16 @@ void IndexBuilder::add_document(
     size_t document_id,
     const std::string &text,
     const ParserConfiguration &config) {
-    index_.docs_[document_id] = text;
-    std::vector<ParsedString> parsed_text = parse(text, config);
-    for (const auto &word : parsed_text) {
-        for (const auto &term : word.ngrams_) {
-            index_.entries_[term][document_id].push_back(word.text_position_);
+    /* if a document with this id hasn't yet been added, then add it, otherwise
+     * the method will simply do nothing */
+    if (index_.docs_.find(document_id) == index_.docs_.end()) {
+        index_.docs_[document_id] = text;
+        std::vector<ParsedString> parsed_text = parse(text, config);
+        for (const auto &word : parsed_text) {
+            for (const auto &term : word.ngrams_) {
+                index_.entries_[term][document_id].push_back(
+                    word.text_position_);
+            }
         }
     }
 }
@@ -41,13 +47,41 @@ void TextIndexWriter::write(const std::string &path, const Index &index) const {
         file << docs;
     }
     for (const auto &[terms, entries] : index.get_entries()) {
-        std::string hash_hex_term;
-        picosha2::hash256_hex_string(terms, hash_hex_term);
-        hash_hex_term.resize(FIRST_NECESSARY_BYTES);
+        std::string hash_hex_term = generate_hash(terms);
         std::fstream file(path + "entries/" + hash_hex_term, std::fstream::out);
-        file.seekp(0, std::ios_base::end);
         file << convert_entries(terms, entries);
     }
+}
+
+std::string generate_hash(std::string term) {
+    std::string hash_hex_term;
+    picosha2::hash256_hex_string(term, hash_hex_term);
+    hash_hex_term.resize(FIRST_NECESSARY_BYTES);
+    return hash_hex_term;
+}
+
+void parse_entry(
+    const std::string &path, [[maybe_unused]] std::map<term, entry> &entries) {
+    std::fstream file(path, std::fstream::in);
+    std::string term;
+    file >> term;
+    size_t doc_count = 0;
+    file >> doc_count;
+    entry entry;
+    for (size_t i = 0; i < doc_count; ++i) {
+        size_t document_id = 0;
+        file >> document_id;
+        pos position;
+        size_t pos_count = 0;
+        file >> pos_count;
+        for (size_t j = 0; j < pos_count; ++j) {
+            size_t pos_num = 0;
+            file >> pos_num;
+            position.push_back(pos_num);
+        }
+        entry[document_id] = position;
+    }
+    entries[term] = entry;
 }
 
 } // namespace libfts

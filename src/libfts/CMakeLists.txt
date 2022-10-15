@@ -1,5 +1,7 @@
 set(target_name fts)
 
+configure_file(${PROJECT_SOURCE_DIR}/include/libfts/absolutepath.hpp.in absolutepath.hpp)
+
 add_library(${target_name} STATIC
   parser.cpp
   indexer.cpp
@@ -15,6 +17,7 @@ target_include_directories(
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/external
+    ${CMAKE_BINARY_DIR}/src
 )
 
 target_link_libraries(

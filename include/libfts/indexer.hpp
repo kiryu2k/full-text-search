@@ -8,6 +8,8 @@
 
 namespace libfts {
 
+const size_t FIRST_NECESSARY_BYTES = 6;
+
 using doc_id = size_t;
 using pos = std::vector<size_t>;
 using entry = std::map<doc_id, pos>;
@@ -41,8 +43,10 @@ public:
 };
 
 struct TextIndexWriter {
-    const size_t FIRST_NECESSARY_BYTES = 6;
     void write(const std::string &path, const Index &index) const;
 };
+
+std::string generate_hash(std::string term);
+void parse_entry(const std::string &path, std::map<term, entry> &entries);
 
 } // namespace libfts
