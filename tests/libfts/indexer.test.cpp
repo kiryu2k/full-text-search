@@ -34,25 +34,15 @@ TEST(IndexerTest, AddDocumentWithExistingId) {
     idx.add_document(101, "Mirror, mirror, the reflection of the law", config);
     std::map<libfts::doc_id, libfts::doc> expected_docs = {
         {101, "On Hawaii island"}};
-    std::vector<libfts::term> expected_terms = {
-        "haw", "hawa", "hawai", "hawaii", "isl", "isla", "islan", "island"};
-    std::vector<libfts::pos> expected_pos = {
-        libfts::pos{0},
-        libfts::pos{0},
-        libfts::pos{0},
-        libfts::pos{0},
-        libfts::pos{1},
-        libfts::pos{1},
-        libfts::pos{1},
-        libfts::pos{1}};
+    std::map<libfts::term, libfts::entry> expected_entries = {
+        {"haw", {{101, libfts::pos{0}}}},
+        {"hawa", {{101, libfts::pos{0}}}},
+        {"hawai", {{101, libfts::pos{0}}}},
+        {"hawaii", {{101, libfts::pos{0}}}},
+        {"isl", {{101, libfts::pos{1}}}},
+        {"isla", {{101, libfts::pos{1}}}},
+        {"islan", {{101, libfts::pos{1}}}},
+        {"island", {{101, libfts::pos{1}}}}};
     EXPECT_EQ(idx.get_index().get_docs(), expected_docs);
-    size_t i = 0;
-    for (const auto &[terms, entries] : idx.get_index().get_entries()) {
-        EXPECT_EQ(expected_terms[i], terms);
-        for (const auto &[doc_id, pos] : entries) {
-            EXPECT_EQ(101, doc_id);
-            EXPECT_EQ(expected_pos[i], pos);
-        }
-        ++i;
-    }
+    EXPECT_EQ(idx.get_index().get_entries(), expected_entries);
 }
