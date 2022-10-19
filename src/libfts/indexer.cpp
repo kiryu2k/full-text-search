@@ -1,5 +1,6 @@
 #include <libfts/indexer.hpp>
 
+#include <fmt/format.h>
 #include <picosha2/picosha2.h>
 
 #include <fstream>
@@ -10,27 +11,26 @@ void IndexBuilder::add_document(
     size_t document_id,
     const std::string &text,
     const ParserConfiguration &config) {
-    /* if a document with this id hasn't yet been added, then add it, otherwise
-     * the method will simply do nothing */
-    if (index_.docs_.find(document_id) == index_.docs_.end()) {
-        index_.docs_[document_id] = text;
-        std::vector<ParsedString> parsed_text = parse(text, config);
-        for (const auto &word : parsed_text) {
-            for (const auto &term : word.ngrams_) {
-                index_.entries_[term][document_id].push_back(
-                    word.text_position_);
-            }
+    /* if the document with this id has not yet been added, then add it,
+     * otherwise make a return */
+    if (index_.docs_.find(document_id) != index_.docs_.end()) {
+        return;
+    }
+    index_.docs_[document_id] = text;
+    std::vector<ParsedString> parsed_text = parse(text, config);
+    for (const auto &word : parsed_text) {
+        for (const auto &term : word.ngrams_) {
+            index_.entries_[term][document_id].push_back(word.text_position_);
         }
     }
 }
 
 static std::string convert_entries(const Term &term, const Entry &entry) {
-    std::string result = term + " " + std::to_string(entry.size()) + " ";
+    std::string result = fmt::format("{} {} ", term, entry.size());
     for (const auto &[docs_id, position] : entry) {
-        result += std::to_string(docs_id) + " " +
-            std::to_string(position.size()) + " ";
+        result += fmt::format("{} {} ", docs_id, position.size());
         for (const auto &pos : position) {
-            result += std::to_string(pos) + " ";
+            result += fmt::format("{} ", pos);
         }
     }
     return result;

@@ -25,4 +25,5 @@ target_link_libraries(
   PRIVATE
     nlohmann_json
     picosha2
+    fmt
 )
