@@ -103,8 +103,7 @@ parse(std::string text, const ParserConfiguration &config) {
     string_to_lower(text);
     std::vector<std::string> words = split_string(text);
     words = remove_stop_words(words, config.get_stop_words());
-    std::vector<ParsedString> parsed_query = generate_ngrams(words, config);
-    return parsed_query;
+    return generate_ngrams(words, config);
 }
 
 } // namespace libfts

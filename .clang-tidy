@@ -17,10 +17,7 @@ Checks: '
   -altera-*,
   -cppcoreguidelines-pro-type-member-init,
   -hicpp-member-init,
-  -bugprone-easily-swappable-parameters,
-  -modernize-return-braced-init-list,
-  -performance-inefficient-string-concatenation,
-  -misc-non-private-member-variables-in-classes
+  -modernize-return-braced-init-list
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'
