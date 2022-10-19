@@ -26,8 +26,8 @@ public:
     Index() = default;
     Index(std::map<DocId, Doc> docs, std::map<Term, Entry> entries)
         : docs_(std::move(docs)), entries_(std::move(entries)) {}
-    std::map<DocId, Doc> get_docs() const { return docs_; }
-    std::map<Term, Entry> get_entries() const { return entries_; }
+    const std::map<DocId, Doc> &get_docs() const { return docs_; }
+    const std::map<Term, Entry> &get_entries() const { return entries_; }
 };
 
 class IndexBuilder {
