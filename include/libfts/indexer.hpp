@@ -2,6 +2,7 @@
 
 #include <libfts/parser.hpp>
 
+#include <filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ public:
 };
 
 struct TextIndexWriter {
-    static void write(const std::string &path, const Index &index);
+    static void write(const std::filesystem::path &path, const Index &index);
 };
 
 std::string generate_hash(const std::string &Term);

@@ -1,3 +1,5 @@
-#include <string>
+#pragma once
 
-const std::string ABSOLUTE_PATH = "${PROJECT_SOURCE_DIR}";
+#include <filesystem>
+
+const std::filesystem::path c_absolute_path = "${PROJECT_SOURCE_DIR}";

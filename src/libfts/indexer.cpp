@@ -2,7 +2,6 @@
 
 #include <picosha2/picosha2.h>
 
-#include <filesystem>
 #include <fstream>
 
 namespace libfts {
@@ -37,17 +36,17 @@ static std::string convert_entries(const Term &term, const Entry &entry) {
     return result;
 }
 
-void TextIndexWriter::write(const std::string &path, const Index &index) {
-    std::filesystem::create_directories(path + "docs/");
-    std::filesystem::create_directories(path + "entries/");
+void TextIndexWriter::write(
+    const std::filesystem::path &path, const Index &index) {
+    std::filesystem::create_directories(path / "docs");
+    std::filesystem::create_directories(path / "entries");
     for (const auto &[docs_id, docs] : index.get_docs()) {
-        std::fstream file(
-            path + "docs/" + std::to_string(docs_id), std::fstream::out);
+        std::ofstream file(path / "docs" / std::to_string(docs_id));
         file << docs;
     }
     for (const auto &[terms, entries] : index.get_entries()) {
         std::string hash_hex_term = generate_hash(terms);
-        std::fstream file(path + "entries/" + hash_hex_term, std::fstream::out);
+        std::ofstream file(path / "entries" / hash_hex_term);
         file << convert_entries(terms, entries);
     }
 }
