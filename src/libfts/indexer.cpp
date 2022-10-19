@@ -25,7 +25,7 @@ void IndexBuilder::add_document(
     }
 }
 
-static std::string convert_entries(const term &term, const entry &entry) {
+static std::string convert_entries(const Term &term, const Entry &entry) {
     std::string result = term + " " + std::to_string(entry.size()) + " ";
     for (const auto &[docs_id, position] : entry) {
         result += std::to_string(docs_id) + " " +
@@ -60,17 +60,17 @@ std::string generate_hash(const std::string &term) {
 }
 
 void parse_entry(
-    const std::string &path, [[maybe_unused]] std::map<term, entry> &entries) {
+    const std::string &path, [[maybe_unused]] std::map<Term, Entry> &entries) {
     std::fstream file(path, std::fstream::in);
     std::string term;
     file >> term;
     size_t doc_count = 0;
     file >> doc_count;
-    entry entry;
+    Entry entry;
     for (size_t i = 0; i < doc_count; ++i) {
         size_t document_id = 0;
         file >> document_id;
-        pos position;
+        Pos position;
         size_t pos_count = 0;
         file >> pos_count;
         for (size_t j = 0; j < pos_count; ++j) {
