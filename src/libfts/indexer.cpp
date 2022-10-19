@@ -55,12 +55,10 @@ void TextIndexWriter::write(const std::string &path, const Index &index) {
 std::string generate_hash(const std::string &term) {
     std::string hash_hex_term;
     picosha2::hash256_hex_string(term, hash_hex_term);
-    hash_hex_term.resize(FIRST_NECESSARY_BYTES);
-    return hash_hex_term;
+    return hash_hex_term.substr(0, c_term_hash_size);
 }
 
-void parse_entry(
-    const std::string &path, [[maybe_unused]] std::map<Term, Entry> &entries) {
+void parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
     std::fstream file(path, std::fstream::in);
     std::string term;
     file >> term;

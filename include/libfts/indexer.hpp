@@ -8,7 +8,7 @@
 
 namespace libfts {
 
-const size_t FIRST_NECESSARY_BYTES = 6;
+const size_t c_term_hash_size = 6;
 
 using DocId = size_t;
 using Pos = std::vector<size_t>;
