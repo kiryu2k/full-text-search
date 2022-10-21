@@ -42,6 +42,18 @@ std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
     return documents;
 }
 
+Pos IndexAccessor::get_term_positions_in_document(
+    const Term &term, DocId identifier) {
+    auto entry = index_.get_entries().find(term);
+    if (entry != index_.get_entries().end()) {
+        auto position = entry->second.find(identifier);
+        if (position != entry->second.end()) {
+            return position->second;
+        }
+    }
+    return Pos{};
+}
+
 static std::string convert_entries(const Term &term, const Entry &entry) {
     std::string result = fmt::format("{} {} ", term, entry.size());
     for (const auto &[docs_id, position] : entry) {

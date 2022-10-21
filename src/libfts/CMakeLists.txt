@@ -5,8 +5,10 @@ configure_file(${PROJECT_SOURCE_DIR}/include/libfts/absolutepath.hpp.in absolute
 add_library(${target_name} STATIC
   parser.cpp
   indexer.cpp
+  search.cpp
   ${PROJECT_SOURCE_DIR}/include/libfts/parser.hpp
   ${PROJECT_SOURCE_DIR}/include/libfts/indexer.hpp
+  ${PROJECT_SOURCE_DIR}/include/libfts/search.hpp
   )
 
 include(CompileOptions)
