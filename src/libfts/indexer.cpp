@@ -25,6 +25,23 @@ void IndexBuilder::add_document(
     }
 }
 
+Doc IndexAccessor::get_document_by_id(DocId identifier) {
+    auto document = index_.get_docs().find(identifier);
+    /* что делаеть если элемента по заданному id не существует? */
+    return (document != index_.get_docs().end() ? document->second : "");
+}
+
+std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
+    std::vector<DocId> documents;
+    auto entry = index_.get_entries().find(term);
+    if (entry != index_.get_entries().end()) {
+        for (const auto &[docs_id, position] : entry->second) {
+            documents.push_back(docs_id);
+        }
+    }
+    return documents;
+}
+
 static std::string convert_entries(const Term &term, const Entry &entry) {
     std::string result = fmt::format("{} {} ", term, entry.size());
     for (const auto &[docs_id, position] : entry) {

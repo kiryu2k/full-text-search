@@ -41,6 +41,15 @@ public:
     Index get_index() { return {index_.docs_, index_.entries_}; }
 };
 
+class IndexAccessor {
+    Index index_;
+
+public:
+    explicit IndexAccessor(Index index) : index_(std::move(index)) {}
+    Doc get_document_by_id(DocId identifier);
+    std::vector<DocId> get_documents_by_term(const Term &term);
+};
+
 struct TextIndexWriter {
     static void write(const std::filesystem::path &path, const Index &index);
 };
