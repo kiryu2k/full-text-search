@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 TEST(SearchTest, CalculateScore) {
     std::set<std::string> stop_words;
     size_t min_ngram_len = 5;
@@ -14,7 +16,7 @@ TEST(SearchTest, CalculateScore) {
     idx.add_document(102, "Hello Earth", config);
     libfts::IndexAccessor accessor(idx.get_index());
     std::string query = "hello world";
-    std::map<libfts::DocId, double> expected_score = {
-        {100, 0.810930216}, {101, 0.405465108}, {102, 0.405465108}};
-    EXPECT_EQ(libfts::search(query, config, accessor), expected_score);
+    libfts::ScoreTable expected_score = {
+        {100, log(3.0 / 2) * 2}, {101, log(3.0 / 2)}, {102, log(3.0 / 2)}};
+    EXPECT_EQ(libfts::calculate_score(query, config, accessor), expected_score);
 }

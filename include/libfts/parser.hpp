@@ -30,7 +30,7 @@ public:
 };
 
 struct ParsedString {
-    size_t text_position_;
+    size_t text_position_ = 0;
     std::vector<std::string> ngrams_;
 };
 
