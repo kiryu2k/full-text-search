@@ -8,6 +8,9 @@ namespace libfts {
  * let's use vector of pairs of DocId and double, which can be sorted */
 using ScoreTable = std::vector<std::pair<DocId, double>>;
 
+std::string
+get_string_result(const ScoreTable &score_table, IndexAccessor &index);
+
 ScoreTable calculate_score(
     const std::string &query,
     const ParserConfiguration &config,

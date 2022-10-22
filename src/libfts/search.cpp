@@ -1,5 +1,7 @@
 #include <libfts/search.hpp>
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -29,6 +31,16 @@ static ScoreTable sort_by_score(const std::map<DocId, double> &score_table) {
                                             : lhs.first < rhs.first;
         });
     return sorted_score_table;
+}
+
+std::string
+get_string_result(const ScoreTable &score_table, IndexAccessor &index) {
+    std::string result = "\tid\tscore\ttext\n";
+    for (const auto &[id, score] : score_table) {
+        result += fmt::format(
+            "\t{}\t{}\t{}\n", id, score, index.get_document_by_id(id));
+    }
+    return result;
 }
 
 ScoreTable calculate_score(
