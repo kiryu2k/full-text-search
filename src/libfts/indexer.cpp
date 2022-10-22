@@ -27,17 +27,22 @@ void IndexBuilder::add_document(
 
 Doc IndexAccessor::get_document_by_id(DocId identifier) {
     auto document = index_.get_docs().find(identifier);
-    /* что делаеть если элемента по заданному id не существует? */
-    return (document != index_.get_docs().end() ? document->second : "");
+    if (document == index_.get_docs().end()) {
+        throw AccessorException(
+            "failed to get the document by the specified identifier");
+    }
+    return document->second;
 }
 
 std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
     std::vector<DocId> documents;
     auto entry = index_.get_entries().find(term);
-    if (entry != index_.get_entries().end()) {
-        for (const auto &[docs_id, position] : entry->second) {
-            documents.push_back(docs_id);
-        }
+    if (entry == index_.get_entries().end()) {
+        throw AccessorException(
+            "failed to get a list of document IDs for the specified term");
+    }
+    for (const auto &[docs_id, position] : entry->second) {
+        documents.push_back(docs_id);
     }
     return documents;
 }
@@ -45,13 +50,16 @@ std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
 Pos IndexAccessor::get_term_positions_in_document(
     const Term &term, DocId identifier) {
     auto entry = index_.get_entries().find(term);
-    if (entry != index_.get_entries().end()) {
-        auto position = entry->second.find(identifier);
-        if (position != entry->second.end()) {
-            return position->second;
-        }
+    if (entry == index_.get_entries().end()) {
+        throw AccessorException(
+            "failed to get a document for the specified term");
     }
-    return Pos{};
+    auto position = entry->second.find(identifier);
+    if (position == entry->second.end()) {
+        throw AccessorException(
+            "failed to get a list of term positions in documents");
+    }
+    return position->second;
 }
 
 static std::string convert_entries(const Term &term, const Entry &entry) {

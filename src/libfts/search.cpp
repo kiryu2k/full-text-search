@@ -37,6 +37,7 @@ ScoreTable calculate_score(
     IndexAccessor &index) {
     auto parsed_query = parse(query, config);
     std::map<DocId, double> score;
+    auto total_doc_count = static_cast<double>(index.get_document_count());
     for (const auto &word : parsed_query) {
         for (const auto &term : word.ngrams_) {
             auto docs = index.get_documents_by_term(term);
@@ -49,9 +50,8 @@ ScoreTable calculate_score(
                 if (score.find(identifier) == score.end()) {
                     score[identifier] = 0;
                 }
-                score[identifier] += term_freq *
-                    log(static_cast<double>(index.get_document_count()) /
-                        doc_freq);
+                score[identifier] +=
+                    term_freq * log(total_doc_count / doc_freq);
             }
         }
     }

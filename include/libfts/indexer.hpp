@@ -9,6 +9,11 @@ namespace libfts {
 
 const size_t c_term_hash_size = 6;
 
+class AccessorException : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 using DocId = size_t;
 using Pos = std::vector<size_t>;
 using Entry = std::map<DocId, Pos>;
