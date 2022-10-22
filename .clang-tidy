@@ -14,10 +14,7 @@ Checks: '
   -cppcoreguidelines-avoid-magic-number,
   -readability-magic-numbers,
   -bugprone-exception-escape,
-  -altera-*,
-  -cppcoreguidelines-pro-type-member-init,
-  -hicpp-member-init,
-  -modernize-return-braced-init-list
+  -altera-*
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'

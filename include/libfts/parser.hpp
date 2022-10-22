@@ -9,8 +9,7 @@ namespace libfts {
 
 class ConfigurationException : public std::runtime_error {
 public:
-    explicit ConfigurationException(const std::string &what_arg)
-        : std::runtime_error(what_arg) {}
+    using std::runtime_error::runtime_error;
 };
 
 class ParserConfiguration {
@@ -30,7 +29,7 @@ public:
 };
 
 struct ParsedString {
-    size_t text_position_;
+    size_t text_position_ = 0;
     std::vector<std::string> ngrams_;
 };
 

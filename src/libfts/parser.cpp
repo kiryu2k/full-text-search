@@ -32,7 +32,10 @@ ParserConfiguration load_config(const std::string &filename) {
         throw ConfigurationException("ngram lengths must be unsigned integers");
     }
     const auto stop_words = config["stop_words"].get<std::set<std::string>>();
-    return ParserConfiguration(stop_words, min_ngram_length, max_ngram_length);
+    return {
+        stop_words,
+        static_cast<size_t>(min_ngram_length),
+        static_cast<size_t>(max_ngram_length)};
 }
 
 static void remove_punct(std::string &str) {

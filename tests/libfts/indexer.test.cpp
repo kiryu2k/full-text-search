@@ -46,3 +46,39 @@ TEST(IndexerTest, AddDocumentWithExistingId) {
     EXPECT_EQ(idx.get_index().get_docs(), expected_docs);
     EXPECT_EQ(idx.get_index().get_entries(), expected_entries);
 }
+
+TEST(IndexerTest, GetDocumentById) {
+    const auto config =
+        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    libfts::IndexBuilder idx;
+    idx.add_document(100, "The Ides of March", config);
+    idx.add_document(101, "The Place Beyond the Pines", config);
+    idx.add_document(102, "All Good Things", config);
+    try {
+        libfts::IndexAccessor accessor(idx.get_index());
+        EXPECT_EQ(accessor.get_document_by_id(100), "The Ides of March");
+        EXPECT_EQ(accessor.get_document_by_id(102), "All Good Things");
+        EXPECT_EQ(
+            accessor.get_document_by_id(101), "The Place Beyond the Pines");
+    } catch (libfts::AccessorException &ex) {
+    };
+}
+
+TEST(IndexerTest, GetDocumentsByTerm) {
+    const auto config =
+        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    libfts::IndexBuilder idx;
+    idx.add_document(100, "Hello World", config);
+    idx.add_document(101, "Bye World", config);
+    idx.add_document(102, "Hello Earth", config);
+    try {
+        libfts::IndexAccessor accessor(idx.get_index());
+        std::vector<libfts::DocId> expected_docs{100, 101};
+        EXPECT_EQ(accessor.get_documents_by_term("world"), expected_docs);
+        expected_docs = {100, 102};
+        EXPECT_EQ(accessor.get_documents_by_term("hello"), expected_docs);
+        expected_docs = {101};
+        EXPECT_EQ(accessor.get_documents_by_term("bye"), expected_docs);
+    } catch (libfts::AccessorException &ex) {
+    };
+}
