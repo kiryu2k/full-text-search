@@ -25,7 +25,7 @@ void IndexBuilder::add_document(
     }
 }
 
-Doc IndexAccessor::get_document_by_id(DocId identifier) {
+Doc IndexAccessor::get_document_by_id(DocId identifier) const {
     auto document = index_.get_docs().find(identifier);
     if (document == index_.get_docs().end()) {
         throw AccessorException(
@@ -34,7 +34,8 @@ Doc IndexAccessor::get_document_by_id(DocId identifier) {
     return document->second;
 }
 
-std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
+std::vector<DocId>
+IndexAccessor::get_documents_by_term(const Term &term) const {
     std::vector<DocId> documents;
     auto entry = index_.get_entries().find(term);
     if (entry == index_.get_entries().end()) {
@@ -48,7 +49,7 @@ std::vector<DocId> IndexAccessor::get_documents_by_term(const Term &term) {
 }
 
 Pos IndexAccessor::get_term_positions_in_document(
-    const Term &term, DocId identifier) {
+    const Term &term, DocId identifier) const {
     auto entry = index_.get_entries().find(term);
     if (entry == index_.get_entries().end()) {
         throw AccessorException(

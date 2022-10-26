@@ -51,10 +51,11 @@ class IndexAccessor {
 
 public:
     explicit IndexAccessor(Index index) : index_(std::move(index)) {}
-    Doc get_document_by_id(DocId identifier);
-    std::vector<DocId> get_documents_by_term(const Term &term);
-    Pos get_term_positions_in_document(const Term &term, DocId identifier);
-    size_t get_document_count() { return index_.get_docs().size(); }
+    Doc get_document_by_id(DocId identifier) const;
+    std::vector<DocId> get_documents_by_term(const Term &term) const;
+    Pos
+    get_term_positions_in_document(const Term &term, DocId identifier) const;
+    size_t get_document_count() const { return index_.get_docs().size(); }
 };
 
 struct TextIndexWriter {
