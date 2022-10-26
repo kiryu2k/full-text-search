@@ -17,28 +17,28 @@ static double calculate_document_frequency(const std::vector<DocId> &docs) {
     return static_cast<double>(docs.size());
 }
 
-static ScoreTable sort_by_score(const std::map<DocId, double> &score_table) {
+static ScoreTable sort_by_score(
+    const std::map<DocId, double> &score_table, IndexAccessor &index) {
     ScoreTable sorted_score_table;
-    std::copy(
-        score_table.begin(),
-        score_table.end(),
-        std::back_inserter<ScoreTable>(sorted_score_table));
+    for (const auto &[document_id, score] : score_table) {
+        sorted_score_table.push_back(
+            {document_id, score, index.get_document_by_id(document_id)});
+    }
     std::sort(
         sorted_score_table.begin(),
         sorted_score_table.end(),
         [](const auto &lhs, const auto &rhs) {
-            return lhs.second != rhs.second ? lhs.second > rhs.second
-                                            : lhs.first < rhs.first;
+            return lhs.score_ != rhs.score_
+                ? lhs.score_ > rhs.score_
+                : lhs.document_id_ < rhs.document_id_;
         });
     return sorted_score_table;
 }
 
-std::string
-get_string_result(const ScoreTable &score_table, IndexAccessor &index) {
+std::string get_string_result(const ScoreTable &score_table) {
     std::string result = "\tid\tscore\ttext\n";
-    for (const auto &[id, score] : score_table) {
-        result += fmt::format(
-            "\t{}\t{}\t{}\n", id, score, index.get_document_by_id(id));
+    for (const auto &[id, score, text] : score_table) {
+        result += fmt::format("\t{}\t{}\t{}\n", id, score, text);
     }
     return result;
 }
@@ -59,15 +59,12 @@ ScoreTable search(
                     calculate_term_frequency(term, identifier, index);
                 /* if this is the first time we access an item with this index,
                  * we initialize it with zero */
-                if (score.find(identifier) == score.end()) {
-                    score[identifier] = 0;
-                }
                 score[identifier] +=
                     term_freq * log(total_doc_count / doc_freq);
             }
         }
     }
-    return sort_by_score(score);
+    return sort_by_score(score, index);
 }
 
 } // namespace libfts

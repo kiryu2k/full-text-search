@@ -4,12 +4,15 @@
 
 namespace libfts {
 
-/* because of the std::map device, it can't be applied sorting by value, so
- * let's use vector of pairs of DocId and double, which can be sorted */
-using ScoreTable = std::vector<std::pair<DocId, double>>;
+struct Score {
+    DocId document_id_ = 0;
+    double score_ = 0;
+    Doc text_;
+};
 
-std::string
-get_string_result(const ScoreTable &score_table, IndexAccessor &index);
+using ScoreTable = std::vector<Score>;
+
+std::string get_string_result(const ScoreTable &score_table);
 
 ScoreTable search(
     const std::string &query,
