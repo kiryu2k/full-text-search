@@ -7,11 +7,6 @@
 
 namespace libfts {
 
-static double
-calculate_term_frequency(const Term &term, DocId docs, IndexAccessor &idx) {
-    return idx.get_term_positions_in_document(term, docs).size();
-}
-
 static ScoreTable sort_by_score(
     const std::map<DocId, double> &score_table, IndexAccessor &index) {
     ScoreTable sorted_score_table;
@@ -50,8 +45,9 @@ ScoreTable search(
             auto docs = index.get_documents_by_term(term);
             double doc_freq = docs.size();
             for (const auto &identifier : docs) {
-                auto term_freq =
-                    calculate_term_frequency(term, identifier, index);
+                double term_freq =
+                    index.get_term_positions_in_document(term, identifier)
+                        .size();
                 score[identifier] +=
                     term_freq * log(total_doc_count / doc_freq);
             }
