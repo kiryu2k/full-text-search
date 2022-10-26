@@ -12,7 +12,7 @@ struct Score {
 
 using ScoreTable = std::vector<Score>;
 
-std::string get_string_result(const ScoreTable &score_table);
+std::string get_string_search_result(const ScoreTable &score_table);
 
 ScoreTable search(
     const std::string &query,

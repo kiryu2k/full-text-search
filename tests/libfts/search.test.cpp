@@ -29,7 +29,7 @@ TEST(SearchTest, CalculateScore) {
             EXPECT_EQ(score_tab[i].text_, expected_score[i].text_);
         }
         EXPECT_EQ(
-            libfts::get_string_result(score_tab),
+            libfts::get_string_search_result(score_tab),
             "\tid\tscore\ttext\n\t100\t0.8109302162163288\tHello "
             "World\n\t101\t0.4054651081081644\tByeee "
             "World\n\t102\t0.4054651081081644\tHello Earth\n");
@@ -60,7 +60,7 @@ TEST(SearchTest, CalculateAnotherOneScore) {
             EXPECT_EQ(score_tab[i].text_, expected_score[i].text_);
         }
         EXPECT_EQ(
-            libfts::get_string_result(score_tab),
+            libfts::get_string_search_result(score_tab),
             "\tid\tscore\ttext\n\t101\t1.0986122886681098\tBye "
             "Wor\n\t102\t1.0986122886681098\tHel Ear\n");
     } catch (libfts::AccessorException &ex) {
