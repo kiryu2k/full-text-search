@@ -43,7 +43,7 @@ get_string_result(const ScoreTable &score_table, IndexAccessor &index) {
     return result;
 }
 
-ScoreTable calculate_score(
+ScoreTable search(
     const std::string &query,
     const ParserConfiguration &config,
     IndexAccessor &index) {

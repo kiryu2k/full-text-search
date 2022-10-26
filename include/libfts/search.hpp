@@ -11,7 +11,7 @@ using ScoreTable = std::vector<std::pair<DocId, double>>;
 std::string
 get_string_result(const ScoreTable &score_table, IndexAccessor &index);
 
-ScoreTable calculate_score(
+ScoreTable search(
     const std::string &query,
     const ParserConfiguration &config,
     IndexAccessor &index);

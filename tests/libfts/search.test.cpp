@@ -19,7 +19,7 @@ TEST(SearchTest, CalculateScore) {
         std::string query = "hello world";
         libfts::ScoreTable expected_score = {
             {100, log(3.0 / 2) * 2}, {101, log(3.0 / 2)}, {102, log(3.0 / 2)}};
-        auto score = libfts::calculate_score(query, config, accessor);
+        auto score = libfts::search(query, config, accessor);
         EXPECT_EQ(score, expected_score);
         EXPECT_EQ(
             libfts::get_string_result(score, accessor),
@@ -45,7 +45,7 @@ TEST(SearchTest, CalculateAnotherOneScore) {
         std::string query = "bye ear";
         libfts::ScoreTable expected_score = {
             {101, log(3.0 / 1)}, {102, log(3.0 / 1)}};
-        auto score = libfts::calculate_score(query, config, accessor);
+        auto score = libfts::search(query, config, accessor);
         EXPECT_EQ(score, expected_score);
         EXPECT_EQ(
             libfts::get_string_result(score, accessor),
