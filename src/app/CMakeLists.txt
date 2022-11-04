@@ -18,4 +18,5 @@ target_link_libraries(
     CLI11
     fmt
     replxx
+    fast-cpp-csv-parser
 )
