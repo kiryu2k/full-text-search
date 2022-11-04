@@ -11,10 +11,9 @@ TEST(IndexerTest, AddMultipleDocuments) {
     idx.add_document(199903, "The Matrix matrix awwww", config);
     idx.add_document(200305, "The Matrix Reloaded", config);
     idx.add_document(200311, "The Matrix Revolutions", config);
-    libfts::TextIndexWriter writer;
-    writer.write(c_absolute_path / "index", idx.get_index());
+    libfts::TextIndexWriter::write(c_absolute_path / "index", idx.get_index());
     idx.add_document(200458, "The Matrix in the red bottoms MATR", config);
-    writer.write(c_absolute_path / "index", idx.get_index());
+    libfts::TextIndexWriter::write(c_absolute_path / "index", idx.get_index());
     std::map<libfts::Term, libfts::Entry> entry;
     libfts::parse_entry(
         c_absolute_path / "index/entries" / libfts::generate_hash("matrix"),
@@ -24,6 +23,15 @@ TEST(IndexerTest, AddMultipleDocuments) {
         {"matrix",
          {{199903, {0, 1}}, {200305, {0}}, {200311, {0}}, {200458, {0}}}});
     EXPECT_EQ(entry, expected_entry);
+    std::map<libfts::DocId, libfts::Doc> document;
+    libfts::parse_document(c_absolute_path / "index/docs/200305", document);
+    std::map<libfts::DocId, libfts::Doc> expected_document;
+    expected_document.insert({200305, "The Matrix Reloaded"});
+    EXPECT_EQ(document, expected_document);
+    libfts::IndexBuilder idx2;
+    idx2.read(c_absolute_path / "index");
+    EXPECT_EQ(idx2.get_index().get_docs(), idx.get_index().get_docs());
+    EXPECT_EQ(idx2.get_index().get_entries(), idx.get_index().get_entries());
 }
 
 TEST(IndexerTest, AddDocumentWithExistingId) {

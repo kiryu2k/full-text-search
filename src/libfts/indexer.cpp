@@ -25,6 +25,16 @@ void IndexBuilder::add_document(
     }
 }
 
+void IndexBuilder::read(const std::filesystem::path &path) {
+    for (const auto &doc : std::filesystem::directory_iterator(path / "docs")) {
+        parse_document(doc.path(), index_.docs_);
+    }
+    for (const auto &entry :
+         std::filesystem::directory_iterator(path / "entries")) {
+        parse_entry(entry.path(), index_.entries_);
+    }
+}
+
 Doc IndexAccessor::get_document_by_id(DocId identifier) const {
     auto document = index_.get_docs().find(identifier);
     if (document == index_.get_docs().end()) {
@@ -116,6 +126,15 @@ void parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
         entry[document_id] = position;
     }
     entries[term] = entry;
+}
+
+void parse_document(const std::string &path, std::map<DocId, Doc> &docs) {
+    std::fstream file(path, std::fstream::in);
+    const auto last_delim = path.find_last_of('/') + 1;
+    DocId doc_id = std::atoi(path.substr(last_delim).c_str());
+    Doc document;
+    std::getline(file, document);
+    docs[doc_id] = document;
 }
 
 } // namespace libfts
