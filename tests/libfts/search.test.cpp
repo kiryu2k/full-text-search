@@ -17,19 +17,18 @@ TEST(SearchTest, CalculateScore) {
     try {
         libfts::IndexAccessor accessor(idx.get_index());
         std::string query = "hello world";
-        libfts::ScoreTable expected_score = {
+        libfts::Results expected_result = {
             {100, log(3.0 / 2) * 2, "Hello World"},
             {101, log(3.0 / 2), "Byeee World"},
             {102, log(3.0 / 2), "Hello Earth"}};
-        auto score_tab = libfts::search(query, config, accessor);
-        for (size_t i = 0; i < score_tab.size(); ++i) {
-            EXPECT_EQ(
-                score_tab[i].document_id_, expected_score[i].document_id_);
-            EXPECT_EQ(score_tab[i].score_, expected_score[i].score_);
-            EXPECT_EQ(score_tab[i].text_, expected_score[i].text_);
+        auto result = libfts::search(query, config, accessor);
+        for (size_t i = 0; i < result.size(); ++i) {
+            EXPECT_EQ(result[i].document_id_, expected_result[i].document_id_);
+            EXPECT_EQ(result[i].score_, expected_result[i].score_);
+            EXPECT_EQ(result[i].text_, expected_result[i].text_);
         }
         EXPECT_EQ(
-            libfts::get_string_search_result(score_tab),
+            libfts::get_string_search_result(result),
             "\tid\tscore\ttext\n\t100\t0.8109302162163288\tHello "
             "World\n\t101\t0.4054651081081644\tByeee "
             "World\n\t102\t0.4054651081081644\tHello Earth\n");
@@ -50,17 +49,16 @@ TEST(SearchTest, CalculateAnotherOneScore) {
     try {
         libfts::IndexAccessor accessor(idx.get_index());
         std::string query = "bye ear";
-        libfts::ScoreTable expected_score = {
+        libfts::Results expected_result = {
             {101, log(3.0 / 1), "Bye Wor"}, {102, log(3.0 / 1), "Hel Ear"}};
-        auto score_tab = libfts::search(query, config, accessor);
-        for (size_t i = 0; i < score_tab.size(); ++i) {
-            EXPECT_EQ(
-                score_tab[i].document_id_, expected_score[i].document_id_);
-            EXPECT_EQ(score_tab[i].score_, expected_score[i].score_);
-            EXPECT_EQ(score_tab[i].text_, expected_score[i].text_);
+        auto result = libfts::search(query, config, accessor);
+        for (size_t i = 0; i < result.size(); ++i) {
+            EXPECT_EQ(result[i].document_id_, expected_result[i].document_id_);
+            EXPECT_EQ(result[i].score_, expected_result[i].score_);
+            EXPECT_EQ(result[i].text_, expected_result[i].text_);
         }
         EXPECT_EQ(
-            libfts::get_string_search_result(score_tab),
+            libfts::get_string_search_result(result),
             "\tid\tscore\ttext\n\t101\t1.0986122886681098\tBye "
             "Wor\n\t102\t1.0986122886681098\tHel Ear\n");
     } catch (libfts::AccessorException &ex) {
