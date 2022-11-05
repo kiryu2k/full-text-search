@@ -4,39 +4,29 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdlib>
+
 TEST(IndexerTest, AddMultipleDocuments) {
-    const auto config =
-        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    const std::filesystem::path path(c_absolute_path);
+    const auto config = libfts::load_config(path / "ParserConfig.json");
     libfts::IndexBuilder idx;
     idx.add_document(199903, "The Matrix matrix awwww", config);
     idx.add_document(200305, "The Matrix Reloaded", config);
     idx.add_document(200311, "The Matrix Revolutions", config);
-    libfts::TextIndexWriter::write(c_absolute_path / "index", idx.get_index());
+    char dir_name_template[] = "/tmp/index_XXXXXX";
+    char *temporary_dir_name = mkdtemp(dir_name_template);
+    libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
     idx.add_document(200458, "The Matrix in the red bottoms MATR", config);
-    libfts::TextIndexWriter::write(c_absolute_path / "index", idx.get_index());
-    std::map<libfts::Term, libfts::Entry> entry;
-    libfts::parse_entry(
-        c_absolute_path / "index/entries" / libfts::generate_hash("matrix"),
-        entry);
-    std::map<libfts::Term, libfts::Entry> expected_entry;
-    expected_entry.insert(
-        {"matrix",
-         {{199903, {0, 1}}, {200305, {0}}, {200311, {0}}, {200458, {0}}}});
-    EXPECT_EQ(entry, expected_entry);
-    std::map<libfts::DocId, libfts::Doc> document;
-    libfts::parse_document(c_absolute_path / "index/docs/200305", document);
-    std::map<libfts::DocId, libfts::Doc> expected_document;
-    expected_document.insert({200305, "The Matrix Reloaded"});
-    EXPECT_EQ(document, expected_document);
-    libfts::IndexBuilder idx2;
-    idx2.read(c_absolute_path / "index");
-    EXPECT_EQ(idx2.get_index().get_docs(), idx.get_index().get_docs());
-    EXPECT_EQ(idx2.get_index().get_entries(), idx.get_index().get_entries());
+    libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
+    libfts::Index idx2 = libfts::TextIndexReader::read(temporary_dir_name);
+    EXPECT_EQ(idx.get_index().get_docs(), idx2.get_docs());
+    EXPECT_EQ(idx.get_index().get_entries(), idx2.get_entries());
+    std::filesystem::remove_all(temporary_dir_name);
 }
 
 TEST(IndexerTest, AddDocumentWithExistingId) {
-    const auto config =
-        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    const std::filesystem::path path(c_absolute_path);
+    const auto config = libfts::load_config(path / "ParserConfig.json");
     libfts::IndexBuilder idx;
     idx.add_document(101, "On Hawaii island", config);
     idx.add_document(101, "Mirror, mirror, the reflection of the law", config);
@@ -56,8 +46,8 @@ TEST(IndexerTest, AddDocumentWithExistingId) {
 }
 
 TEST(IndexerTest, GetDocumentById) {
-    const auto config =
-        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    const std::filesystem::path path(c_absolute_path);
+    const auto config = libfts::load_config(path / "ParserConfig.json");
     libfts::IndexBuilder idx;
     idx.add_document(100, "The Ides of March", config);
     idx.add_document(101, "The Place Beyond the Pines", config);
@@ -73,8 +63,8 @@ TEST(IndexerTest, GetDocumentById) {
 }
 
 TEST(IndexerTest, GetDocumentsByTerm) {
-    const auto config =
-        libfts::load_config(c_absolute_path / "ParserConfig.json");
+    const std::filesystem::path path(c_absolute_path);
+    const auto config = libfts::load_config(path / "ParserConfig.json");
     libfts::IndexBuilder idx;
     idx.add_document(100, "Hello World", config);
     idx.add_document(101, "Bye World", config);

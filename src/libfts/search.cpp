@@ -26,9 +26,11 @@ static Results sort_by_score(
 }
 
 std::string get_string_search_result(const Results &search_result) {
-    std::string result = "\tid\tscore\ttext\n";
+    std::string result;
+    size_t ordinal_num = 1;
     for (const auto &[id, score, text] : search_result) {
-        result += fmt::format("\t{}\t{}\t{}\n", id, score, text);
+        result +=
+            fmt::format("{}\t{}\t{}\t{}\n", ordinal_num++, score, id, text);
     }
     return result;
 }

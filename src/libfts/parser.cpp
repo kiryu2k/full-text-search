@@ -20,7 +20,7 @@ ParserConfiguration::ParserConfiguration(
     }
 }
 
-ParserConfiguration load_config(const std::string &filename) {
+ParserConfiguration load_config(const std::filesystem::path &filename) {
     std::ifstream file(filename);
     nlohmann::json config = nlohmann::json::parse(file, nullptr, false);
     if (config.is_discarded()) {
