@@ -21,7 +21,8 @@ static void launch_indexer(
     libfts::Doc text;
     std::string language;
     while (csv.read_row(document_id, text, language)) {
-        if (language == "eng" || language == "en-US") {
+        if ((language == "eng" || language == "en-US") &&
+            !libfts::is_added(indexer.get_index(), text)) {
             indexer.add_document(document_id, text, config);
         }
     }
@@ -47,6 +48,8 @@ static void launch_interactive_searcher(
     const std::filesystem::path &index_dir,
     std::string &query) {
     replxx::Replxx editor;
+    const size_t exit_size = 5;
+    const size_t clear_size = 6;
     while (true) {
         char const *cinput{nullptr};
         do {
@@ -60,11 +63,11 @@ static void launch_interactive_searcher(
             /* user hits enter on an empty line */
             continue;
         }
-        if (query.compare(0, 5, ".quit") == 0 ||
-            query.compare(0, 5, ".exit") == 0) {
+        if (query.compare(0, exit_size, ".quit") == 0 ||
+            query.compare(0, exit_size, ".exit") == 0) {
             break;
         }
-        if (query.compare(0, 6, ".clear") == 0) {
+        if (query.compare(0, clear_size, ".clear") == 0) {
             /* clear the screen */
             editor.clear_screen();
             continue;

@@ -62,7 +62,17 @@ Results search(
         static_cast<double>(index.get_document_count());
     for (const auto &word : parsed_query) {
         for (const auto &term : word.ngrams_) {
-            auto docs = index.get_documents_by_term(term);
+            Pos docs;
+            try {
+                /* if term isn't found in the list of docs, exception will be
+                 * thrown */
+                docs = index.get_documents_by_term(term);
+            } catch (libfts::AccessorException &ex) {
+                /* but since the query may contain errors and we'd like to
+                 * see the result anyway, we need to handle this exception and
+                 * keep working */
+                continue;
+            }
             auto doc_freq = static_cast<double>(docs.size());
             for (const auto &identifier : docs) {
                 auto term_freq = static_cast<double>(

@@ -66,5 +66,6 @@ struct TextIndexReader {
 };
 
 std::string generate_hash(const std::string &Term);
+bool is_added(const Index &index, const std::string &text);
 
 } // namespace libfts
