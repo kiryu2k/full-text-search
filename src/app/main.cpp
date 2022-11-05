@@ -9,11 +9,12 @@
 #include <replxx.hxx>
 
 static void launch_indexer(
+    const std::filesystem::path &csv_file,
     const libfts::ParserConfiguration &config,
-    const std::filesystem::path &path) {
+    const std::filesystem::path &index_dir) {
     libfts::IndexBuilder indexer;
     const size_t column_count = 3;
-    io::CSVReader<column_count> csv(path / "books.csv");
+    io::CSVReader<column_count> csv(csv_file);
     csv.read_header(
         io::ignore_extra_column, "bookID", "title", "language_code");
     libfts::DocId document_id = 0;
@@ -24,16 +25,16 @@ static void launch_indexer(
             indexer.add_document(document_id, text, config);
         }
     }
-    libfts::TextIndexWriter::write(path / "index", indexer.get_index());
+    libfts::TextIndexWriter::write(index_dir, indexer.get_index());
 }
 
 static void launch_searcher(
     const libfts::ParserConfiguration &config,
-    const std::filesystem::path &path,
+    const std::filesystem::path &index_dir,
     std::string &query) {
     try {
         libfts::IndexAccessor accessor(
-            libfts::TextIndexReader::read(path / "index"));
+            libfts::TextIndexReader::read(index_dir));
         auto result = libfts::search(query, config, accessor);
         fmt::print("{}", libfts::get_string_search_result(result));
     } catch (libfts::AccessorException &ex) {
@@ -43,7 +44,7 @@ static void launch_searcher(
 
 static void launch_interactive_searcher(
     const libfts::ParserConfiguration &config,
-    const std::filesystem::path &path,
+    const std::filesystem::path &index_dir,
     std::string &query) {
     replxx::Replxx editor;
     while (true) {
@@ -68,7 +69,7 @@ static void launch_interactive_searcher(
             editor.clear_screen();
             continue;
         }
-        launch_searcher(config, path, query);
+        launch_searcher(config, index_dir, query);
     }
 }
 
@@ -76,15 +77,22 @@ int main(int argc, char **argv) {
     CLI::App app{"fts"};
     auto *indexer_sub = app.add_subcommand("index", "Indexer");
     auto *searcher_sub = app.add_subcommand("search", "Searcher");
-    std::filesystem::path path;
+    std::filesystem::path index_dir;
+    std::filesystem::path csv_file;
     std::string query;
     indexer_sub
         ->add_option<std::filesystem::path>(
-            "-i,--index", path, "path to folder with indexes")
+            "-i,--index", index_dir, "path to folder with indexes")
+        ->required();
+    indexer_sub
+        ->add_option<std::filesystem::path>(
+            "-c,--csv",
+            csv_file,
+            "path to csv file in which we're gonna search something")
         ->required();
     searcher_sub
         ->add_option<std::filesystem::path>(
-            "-i,--index", path, "path to folder with indexes")
+            "-i,--index", index_dir, "path to folder with indexes")
         ->required();
     searcher_sub->add_option<std::string>("-q,--query", query, "search query");
     CLI11_PARSE(app, argc, argv);
@@ -92,12 +100,12 @@ int main(int argc, char **argv) {
         std::filesystem::path path(c_absolute_path);
         const auto config = libfts::load_config(path / "ParserConfig.json");
         if (indexer_sub->parsed()) {
-            launch_indexer(config, path);
+            launch_indexer(path / csv_file, config, path / index_dir);
         } else if (searcher_sub->parsed()) {
             if (searcher_sub->count("--query") != 1) {
-                launch_interactive_searcher(config, path, query);
+                launch_interactive_searcher(config, path / index_dir, query);
             } else {
-                launch_searcher(config, path, query);
+                launch_searcher(config, path / index_dir, query);
             }
         }
     } catch (libfts::ConfigurationException &ex) {
