@@ -20,10 +20,14 @@ static void launch_indexer(
     libfts::DocId document_id = 0;
     libfts::Doc text;
     std::string language;
+    size_t count = 0;
+    const size_t output_freq = 500;
     while (csv.read_row(document_id, text, language)) {
-        if ((language == "eng" || language == "en-US") &&
-            !libfts::is_added(indexer.get_index(), text)) {
+        if ((language == "eng" || language == "en-US")) {
             indexer.add_document(document_id, text, config);
+            if (++count % output_freq == 0) {
+                fmt::print("{} documents...\n", count);
+            }
         }
     }
     libfts::TextIndexWriter::write(index_dir, indexer.get_index());
@@ -48,8 +52,7 @@ static void launch_interactive_searcher(
     const std::filesystem::path &index_dir,
     std::string &query) {
     replxx::Replxx editor;
-    const size_t exit_size = 5;
-    const size_t clear_size = 6;
+    editor.clear_screen();
     while (true) {
         char const *cinput{nullptr};
         do {
@@ -61,15 +64,6 @@ static void launch_interactive_searcher(
         query = cinput;
         if (query.empty()) {
             /* user hits enter on an empty line */
-            continue;
-        }
-        if (query.compare(0, exit_size, ".quit") == 0 ||
-            query.compare(0, exit_size, ".exit") == 0) {
-            break;
-        }
-        if (query.compare(0, clear_size, ".clear") == 0) {
-            /* clear the screen */
-            editor.clear_screen();
             continue;
         }
         launch_searcher(config, index_dir, query);

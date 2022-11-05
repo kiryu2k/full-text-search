@@ -26,6 +26,13 @@ static void sort_by_score(Results &search_result) {
         });
 }
 
+static bool is_added(const Results &results, const std::string &text) {
+    return std::find_if(
+               results.begin(), results.end(), [text](const auto &result) {
+                   return result.text_ == text;
+               }) != results.end();
+}
+
 static Results cutoff_by_factor(
     const std::map<DocId, double> &search_result,
     IndexAccessor &index,
@@ -34,8 +41,10 @@ static Results cutoff_by_factor(
     const auto max_score = get_max_score(search_result);
     for (const auto &[document_id, score] : search_result) {
         if (score > max_score * cutoff_factor) {
-            results.push_back(
-                {document_id, score, index.get_document_by_id(document_id)});
+            auto text = index.get_document_by_id(document_id);
+            if (!is_added(results, text)) {
+                results.push_back({document_id, score, text});
+            }
         }
     }
     sort_by_score(results);
