@@ -11,9 +11,10 @@ namespace libfts {
 ParserConfiguration::ParserConfiguration(
     std::set<std::string> stop_words,
     size_t min_ngram_length,
-    size_t max_ngram_length)
+    size_t max_ngram_length,
+    double cutoff_factor)
     : stop_words_{std::move(stop_words)}, min_ngram_length_{min_ngram_length},
-      max_ngram_length_{max_ngram_length} {
+      max_ngram_length_{max_ngram_length}, cutoff_factor_{cutoff_factor} {
     if (min_ngram_length >= max_ngram_length) {
         throw ConfigurationException(
             "maximum ngram length must be greater than minimum ngram length");
@@ -31,11 +32,17 @@ ParserConfiguration load_config(const std::filesystem::path &filename) {
     if (min_ngram_length < 0 || max_ngram_length < 0) {
         throw ConfigurationException("ngram lengths must be unsigned integers");
     }
+    const auto cutoff_factor = config["cutoff_factor"].get<double>();
+    if (cutoff_factor < 0 || cutoff_factor >= 1) {
+        throw ConfigurationException(
+            "cutoff factor must be in the range [0,1)");
+    }
     const auto stop_words = config["stop_words"].get<std::set<std::string>>();
     return {
         stop_words,
         static_cast<size_t>(min_ngram_length),
-        static_cast<size_t>(max_ngram_length)};
+        static_cast<size_t>(max_ngram_length),
+        cutoff_factor};
 }
 
 static void remove_punct(std::string &str) {

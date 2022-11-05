@@ -18,12 +18,15 @@ private:
     std::set<std::string> stop_words_;
     size_t min_ngram_length_;
     size_t max_ngram_length_;
+    double cutoff_factor_;
 
 public:
     ParserConfiguration(
         std::set<std::string> stop_words,
         size_t min_ngram_length,
-        size_t max_ngram_length);
+        size_t max_ngram_length,
+        double cutoff_factor);
+    double get_cutoff_factor() const { return cutoff_factor_; }
     size_t get_min_ngram_length() const { return min_ngram_length_; }
     size_t get_max_ngram_length() const { return max_ngram_length_; }
     const std::set<std::string> &get_stop_words() const { return stop_words_; }
