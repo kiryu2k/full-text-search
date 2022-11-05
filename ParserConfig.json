@@ -37,5 +37,6 @@
         "with"
     ],
     "minimum_ngram_length": 3,
-    "maximum_ngram_length": 7
+    "maximum_ngram_length": 7,
+    "cutoff_factor": 0.45
 }

@@ -17,4 +17,6 @@ target_link_libraries(
     fts
     CLI11
     fmt
+    replxx
+    fast-cpp-csv-parser
 )

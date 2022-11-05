@@ -2,7 +2,6 @@
 
 #include <libfts/parser.hpp>
 
-#include <filesystem>
 #include <map>
 
 namespace libfts {
@@ -62,7 +61,10 @@ struct TextIndexWriter {
     static void write(const std::filesystem::path &path, const Index &index);
 };
 
+struct TextIndexReader {
+    static Index read(const std::filesystem::path &path);
+};
+
 std::string generate_hash(const std::string &Term);
-void parse_entry(const std::string &path, std::map<Term, Entry> &entries);
 
 } // namespace libfts

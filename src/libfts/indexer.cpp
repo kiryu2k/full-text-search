@@ -40,7 +40,8 @@ IndexAccessor::get_documents_by_term(const Term &term) const {
     auto entry = index_.get_entries().find(term);
     if (entry == index_.get_entries().end()) {
         throw AccessorException(
-            "failed to get a list of document IDs for the specified term");
+            "failed to get a list of document IDs for the specified term" +
+            term);
     }
     for (const auto &[docs_id, position] : entry->second) {
         documents.push_back(docs_id);
@@ -89,13 +90,8 @@ void TextIndexWriter::write(
     }
 }
 
-std::string generate_hash(const std::string &term) {
-    std::string hash_hex_term;
-    picosha2::hash256_hex_string(term, hash_hex_term);
-    return hash_hex_term.substr(0, c_term_hash_size);
-}
-
-void parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
+static void
+parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
     std::fstream file(path, std::fstream::in);
     std::string term;
     file >> term;
@@ -116,6 +112,35 @@ void parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
         entry[document_id] = position;
     }
     entries[term] = entry;
+}
+
+static void
+parse_document(const std::string &path, std::map<DocId, Doc> &docs) {
+    std::fstream file(path, std::fstream::in);
+    const auto last_delim = path.find_last_of('/') + 1;
+    DocId doc_id = std::stoi(path.substr(last_delim));
+    Doc document;
+    std::getline(file, document);
+    docs[doc_id] = document;
+}
+
+Index TextIndexReader::read(const std::filesystem::path &path) {
+    std::map<DocId, Doc> docs;
+    std::map<Term, Entry> entries;
+    for (const auto &doc : std::filesystem::directory_iterator(path / "docs")) {
+        parse_document(doc.path(), docs);
+    }
+    for (const auto &entry :
+         std::filesystem::directory_iterator(path / "entries")) {
+        parse_entry(entry.path(), entries);
+    }
+    return {docs, entries};
+}
+
+std::string generate_hash(const std::string &term) {
+    std::string hash_hex_term;
+    picosha2::hash256_hex_string(term, hash_hex_term);
+    return hash_hex_term.substr(0, c_term_hash_size);
 }
 
 } // namespace libfts

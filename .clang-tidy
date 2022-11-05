@@ -14,9 +14,7 @@ Checks: '
   -cppcoreguidelines-avoid-magic-number,
   -readability-magic-numbers,
   -bugprone-exception-escape,
-  -altera-*,
-  -bugprone-narrowing-conversions,
-  -cppcoreguidelines-narrowing-conversions
+  -altera-*
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'

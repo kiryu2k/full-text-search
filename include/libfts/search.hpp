@@ -4,17 +4,17 @@
 
 namespace libfts {
 
-struct Score {
+struct Result {
     DocId document_id_ = 0;
     double score_ = 0;
     Doc text_;
 };
 
-using ScoreTable = std::vector<Score>;
+using Results = std::vector<Result>;
 
-std::string get_string_search_result(const ScoreTable &score_table);
+std::string get_string_search_result(const Results &search_result);
 
-ScoreTable search(
+Results search(
     const std::string &query,
     const ParserConfiguration &config,
     IndexAccessor &index);
