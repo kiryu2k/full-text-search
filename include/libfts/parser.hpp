@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -34,7 +35,7 @@ struct ParsedString {
 };
 
 ParserConfiguration
-load_config(const std::string &filename = "ParserConfig.json");
+load_config(const std::filesystem::path &filename = "ParserConfig.json");
 
 std::vector<ParsedString>
 parse(std::string text, const ParserConfiguration &config);

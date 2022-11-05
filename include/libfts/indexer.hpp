@@ -2,7 +2,6 @@
 
 #include <libfts/parser.hpp>
 
-#include <filesystem>
 #include <map>
 
 namespace libfts {
@@ -44,7 +43,6 @@ public:
         const std::string &text,
         const ParserConfiguration &config);
     Index get_index() { return {index_.docs_, index_.entries_}; }
-    void read(const std::filesystem::path &path);
 };
 
 class IndexAccessor {
@@ -63,13 +61,10 @@ struct TextIndexWriter {
     static void write(const std::filesystem::path &path, const Index &index);
 };
 
-/* нет доступа к полям индекса */
-// struct TextIndexReader {
-//     static void read(const std::filesystem::path &path, Index &index);
-// };
+struct TextIndexReader {
+    static Index read(const std::filesystem::path &path);
+};
 
 std::string generate_hash(const std::string &Term);
-void parse_entry(const std::string &path, std::map<Term, Entry> &entries);
-void parse_document(const std::string &path, std::map<DocId, Doc> &docs);
 
 } // namespace libfts
