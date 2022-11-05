@@ -1,5 +1,5 @@
 #pragma once
 
-#include <filesystem>
+#include <string>
 
-const std::filesystem::path c_absolute_path = "${PROJECT_SOURCE_DIR}";
+const std::string_view c_absolute_path = "${PROJECT_SOURCE_DIR}";
