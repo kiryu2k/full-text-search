@@ -7,14 +7,6 @@
 
 namespace libfts {
 
-bool is_added(const Index &index, const std::string &text) {
-    return std::find_if(
-               index.get_docs().begin(),
-               index.get_docs().end(),
-               [text](const auto &doc) { return doc.second == text; }) !=
-        index.get_docs().end();
-}
-
 void IndexBuilder::add_document(
     size_t document_id,
     const std::string &text,
