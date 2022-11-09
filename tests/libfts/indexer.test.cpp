@@ -18,7 +18,7 @@ TEST(IndexerTest, AddMultipleDocuments) {
     libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
     idx.add_document(200458, "The Matrix in the red bottoms MATR", config);
     libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
-    libfts::Index idx2 = libfts::TextIndexReader::read(temporary_dir_name);
+    const auto idx2 = libfts::TextIndexReader::read(temporary_dir_name);
     EXPECT_EQ(idx.get_index().get_docs(), idx2.get_docs());
     EXPECT_EQ(idx.get_index().get_entries(), idx2.get_entries());
     std::filesystem::remove_all(temporary_dir_name);
@@ -30,9 +30,9 @@ TEST(IndexerTest, AddDocumentWithExistingId) {
     libfts::IndexBuilder idx;
     idx.add_document(101, "On Hawaii island", config);
     idx.add_document(101, "Mirror, mirror, the reflection of the law", config);
-    std::map<libfts::DocId, libfts::Doc> expected_docs = {
+    const std::map<libfts::DocId, libfts::Doc> expected_docs = {
         {101, "On Hawaii island"}};
-    std::map<libfts::Term, libfts::Entry> expected_entries = {
+    const std::map<libfts::Term, libfts::Entry> expected_entries = {
         {"haw", {{101, libfts::Pos{0}}}},
         {"hawa", {{101, libfts::Pos{0}}}},
         {"hawai", {{101, libfts::Pos{0}}}},
@@ -53,12 +53,12 @@ TEST(IndexerTest, GetDocumentById) {
     idx.add_document(101, "The Place Beyond the Pines", config);
     idx.add_document(102, "All Good Things", config);
     try {
-        libfts::IndexAccessor accessor(idx.get_index());
+        const libfts::IndexAccessor accessor(idx.get_index());
         EXPECT_EQ(accessor.get_document_by_id(100), "The Ides of March");
         EXPECT_EQ(accessor.get_document_by_id(102), "All Good Things");
         EXPECT_EQ(
             accessor.get_document_by_id(101), "The Place Beyond the Pines");
-    } catch (libfts::AccessorException &ex) {
+    } catch (const libfts::AccessorException &ex) {
     };
 }
 

@@ -35,13 +35,13 @@ static bool is_added(const Results &results, const std::string &text) {
 
 static Results cutoff_by_factor(
     const std::map<DocId, double> &search_result,
-    IndexAccessor &index,
+    const IndexAccessor &index,
     double cutoff_factor) {
     Results results;
     const auto max_score = get_max_score(search_result);
     for (const auto &[document_id, score] : search_result) {
         if (score > max_score * cutoff_factor) {
-            auto text = index.get_document_by_id(document_id);
+            const auto text = index.get_document_by_id(document_id);
             if (!is_added(results, text)) {
                 results.push_back({document_id, score, text});
             }
@@ -64,8 +64,8 @@ std::string get_string_search_result(const Results &search_result) {
 Results search(
     const std::string &query,
     const ParserConfiguration &config,
-    IndexAccessor &index) {
-    auto parsed_query = parse(query, config);
+    const IndexAccessor &index) {
+    const auto parsed_query = parse(query, config);
     std::map<DocId, double> result;
     const auto total_doc_count =
         static_cast<double>(index.get_document_count());
@@ -76,15 +76,15 @@ Results search(
                 /* if term isn't found in the list of docs, exception will be
                  * thrown */
                 docs = index.get_documents_by_term(term);
-            } catch (libfts::AccessorException &ex) {
+            } catch (const libfts::AccessorException &ex) {
                 /* but since the query may contain errors and we'd like to
                  * see the result anyway, we need to handle this exception and
                  * keep working */
                 continue;
             }
-            auto doc_freq = static_cast<double>(docs.size());
+            const auto doc_freq = static_cast<double>(docs.size());
             for (const auto &identifier : docs) {
-                auto term_freq = static_cast<double>(
+                const auto term_freq = static_cast<double>(
                     index.get_term_positions_in_document(term, identifier)
                         .size());
                 result[identifier] +=

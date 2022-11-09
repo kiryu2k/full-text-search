@@ -10,12 +10,11 @@ namespace libfts {
 
 ParserConfiguration::ParserConfiguration(
     std::set<std::string> stop_words,
-    size_t min_ngram_length,
-    size_t max_ngram_length,
+    const NgramLength &ngram_length,
     double cutoff_factor)
-    : stop_words_{std::move(stop_words)}, min_ngram_length_{min_ngram_length},
-      max_ngram_length_{max_ngram_length}, cutoff_factor_{cutoff_factor} {
-    if (min_ngram_length >= max_ngram_length) {
+    : stop_words_{std::move(stop_words)}, ngram_length_{ngram_length},
+      cutoff_factor_{cutoff_factor} {
+    if (ngram_length.min_ >= ngram_length.max_) {
         throw ConfigurationException(
             "maximum ngram length must be greater than minimum ngram length");
     }
@@ -23,7 +22,7 @@ ParserConfiguration::ParserConfiguration(
 
 ParserConfiguration load_config(const std::filesystem::path &filename) {
     std::ifstream file(filename);
-    nlohmann::json config = nlohmann::json::parse(file, nullptr, false);
+    const auto config = nlohmann::json::parse(file, nullptr, false);
     if (config.is_discarded()) {
         throw ConfigurationException("incorrect configuration format");
     }
@@ -40,8 +39,8 @@ ParserConfiguration load_config(const std::filesystem::path &filename) {
     const auto stop_words = config["stop_words"].get<std::set<std::string>>();
     return {
         stop_words,
-        static_cast<size_t>(min_ngram_length),
-        static_cast<size_t>(max_ngram_length),
+        {static_cast<size_t>(min_ngram_length),
+         static_cast<size_t>(max_ngram_length)},
         cutoff_factor};
 }
 

@@ -36,21 +36,20 @@ static void launch_indexer(
 static void launch_searcher(
     const libfts::ParserConfiguration &config,
     const std::filesystem::path &index_dir,
-    std::string &query) {
+    const std::string &query) {
     try {
         libfts::IndexAccessor accessor(
             libfts::TextIndexReader::read(index_dir));
-        auto result = libfts::search(query, config, accessor);
+        const auto result = libfts::search(query, config, accessor);
         fmt::print("{}", libfts::get_string_search_result(result));
-    } catch (libfts::AccessorException &ex) {
+    } catch (const libfts::AccessorException &ex) {
         fmt::print("error: {}\n", ex.what());
     }
 }
 
 static void launch_interactive_searcher(
     const libfts::ParserConfiguration &config,
-    const std::filesystem::path &index_dir,
-    std::string &query) {
+    const std::filesystem::path &index_dir) {
     replxx::Replxx editor;
     editor.clear_screen();
     while (true) {
@@ -61,7 +60,7 @@ static void launch_interactive_searcher(
         if (cinput == nullptr) {
             break;
         }
-        query = cinput;
+        std::string query = cinput;
         if (query.empty()) {
             /* user hits enter on an empty line */
             continue;
@@ -94,18 +93,18 @@ int main(int argc, char **argv) {
     searcher_sub->add_option<std::string>("-q,--query", query, "search query");
     CLI11_PARSE(app, argc, argv);
     try {
-        std::filesystem::path path(c_absolute_path);
+        const std::filesystem::path path(c_absolute_path);
         const auto config = libfts::load_config(path / "ParserConfig.json");
         if (indexer_sub->parsed()) {
             launch_indexer(path / csv_file, config, path / index_dir);
         } else if (searcher_sub->parsed()) {
             if (searcher_sub->count("--query") != 1) {
-                launch_interactive_searcher(config, path / index_dir, query);
+                launch_interactive_searcher(config, path / index_dir);
             } else {
                 launch_searcher(config, path / index_dir, query);
             }
         }
-    } catch (libfts::ConfigurationException &ex) {
+    } catch (const libfts::ConfigurationException &ex) {
         fmt::print("parse error: {}\n", ex.what());
         return -1;
     };
