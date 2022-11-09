@@ -6,11 +6,10 @@
 
 TEST(SearchTest, CalculateScore) {
     const std::set<std::string> stop_words;
-    const size_t min_ngram_len = 5;
-    const size_t max_ngram_len = 7;
+    const libfts::NgramLength ngram_length = {5, 7};
     const double cutoff_factor = 0;
     const libfts::ParserConfiguration config(
-        stop_words, min_ngram_len, max_ngram_len, cutoff_factor);
+        stop_words, ngram_length, cutoff_factor);
     libfts::IndexBuilder idx;
     idx.add_document(100, "Hello World", config);
     idx.add_document(101, "Byeee World", config);
@@ -39,11 +38,10 @@ TEST(SearchTest, CalculateScore) {
 
 TEST(SearchTest, CalculateAnotherOneScore) {
     const std::set<std::string> stop_words;
-    const size_t min_ngram_len = 3;
-    const size_t max_ngram_len = 4;
+    const libfts::NgramLength ngram_length = {3, 4};
     const double cutoff_factor = 0;
     const libfts::ParserConfiguration config(
-        stop_words, min_ngram_len, max_ngram_len, cutoff_factor);
+        stop_words, ngram_length, cutoff_factor);
     libfts::IndexBuilder idx;
     idx.add_document(100, "Hel Wor", config);
     idx.add_document(101, "Bye Wor", config);
