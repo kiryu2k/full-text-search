@@ -18,21 +18,21 @@ get_string_ngrams(const std::vector<libfts::ParsedString> &words) {
 TEST(ParserTest, ParseTextWithSpaces) {
     const std::filesystem::path path(c_absolute_path);
     try {
-        std::string text = "                \t";
-        libfts::ParserConfiguration config =
-            libfts::load_config(path / "ParserConfig.json");
-        std::vector<libfts::ParsedString> result = libfts::parse(text, config);
+        const std::string text = "                \t";
+        const auto config = libfts::load_config(path / "ParserConfig.json");
+        const std::vector<libfts::ParsedString> result =
+            libfts::parse(text, config);
         EXPECT_EQ(result.size(), 0);
-        std::string expected_string_ngrams = "";
+        const std::string expected_string_ngrams = "";
         EXPECT_EQ(get_string_ngrams(result), expected_string_ngrams);
-    } catch (libfts::ConfigurationException &ex) {
+    } catch (const libfts::ConfigurationException &ex) {
     };
 }
 
 TEST(ParserTest, ParseTypicalText) {
     try {
-        std::string text = "Life is a long lesson in humility!..";
-        std::string expected_ngrams[] = {
+        const std::string text = "Life is a long lesson in humility!..";
+        const std::string expected_ngrams[] = {
             "lif",
             "life",
             "lon",
@@ -46,11 +46,11 @@ TEST(ParserTest, ParseTypicalText) {
             "humil",
             "humili",
             "humilit"};
-        int expected_positions[] = {0, 1, 2, 3};
+        const int expected_positions[] = {0, 1, 2, 3};
         const std::filesystem::path path(c_absolute_path);
-        libfts::ParserConfiguration config =
-            libfts::load_config(path / "ParserConfig.json");
-        std::vector<libfts::ParsedString> result = libfts::parse(text, config);
+        const auto config = libfts::load_config(path / "ParserConfig.json");
+        const std::vector<libfts::ParsedString> result =
+            libfts::parse(text, config);
         int i = 0, j = 0;
         for (const auto &word : result) {
             for (const auto &ngram : word.ngrams_) {
@@ -61,10 +61,10 @@ TEST(ParserTest, ParseTypicalText) {
             ++i;
         }
         EXPECT_EQ(result.size(), i);
-        std::string expected_string_ngrams =
+        const std::string expected_string_ngrams =
             "lif 0 life 0 lon 1 long 1 les 2 less 2 lesso 2 lesson 2 hum 3 "
             "humi 3 humil 3 humili 3 humilit 3 ";
         EXPECT_EQ(get_string_ngrams(result), expected_string_ngrams);
-    } catch (libfts::ConfigurationException &ex) {
+    } catch (const libfts::ConfigurationException &ex) {
     };
 }
