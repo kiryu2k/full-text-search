@@ -32,6 +32,10 @@ public:
         : docs_(std::move(docs)), entries_(std::move(entries)) {}
     const std::map<DocId, Doc> &get_docs() const { return docs_; }
     const std::map<Term, Entry> &get_entries() const { return entries_; }
+    void set_docs(const std::map<DocId, Doc> &docs) { docs_ = docs; }
+    void set_entries(const std::map<Term, Entry> &entries) {
+        entries_ = entries;
+    }
 };
 
 class IndexBuilder {
@@ -42,7 +46,7 @@ public:
         size_t document_id,
         const std::string &text,
         const ParserConfiguration &config);
-    Index get_index() { return {index_.docs_, index_.entries_}; }
+    Index get_index() { return index_; }
 };
 
 class IndexAccessor {
