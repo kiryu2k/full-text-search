@@ -10,6 +10,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 find_program(CLANG_TIDY_EXE NAMES clang-tidy-14 clang-tidy)
 if (NOT CLANG_TIDY_EXE)
   message(WARNING "clang-tidy not found")
