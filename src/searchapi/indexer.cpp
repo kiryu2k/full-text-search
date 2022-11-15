@@ -31,11 +31,11 @@ void index_accessor_delete(IndexAccessor *p_accessor) {
     delete accessor;
 }
 
-Index *text_index_read(Index *p_idx, const char *path) {
+void text_index_read(Index *p_idx, const char *path) {
     auto *idx = reinterpret_cast<libfts::Index *>(p_idx);
     auto reader = libfts::TextIndexReader::read(path);
     idx->set_docs(reader.get_docs());
     idx->set_entries(reader.get_entries());
-    return reinterpret_cast<Index *>(idx);
+    p_idx = reinterpret_cast<Index *>(idx);
 }
 }

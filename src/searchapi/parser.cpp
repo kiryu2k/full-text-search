@@ -2,8 +2,8 @@
 #include <searchapi/parser.h>
 
 extern "C" {
-ParserConfiguration *
-parser_configuration_load(ParserConfiguration *p_config, const char *path) {
+void parser_configuration_load(
+    ParserConfiguration *p_config, const char *path) {
     try {
         auto *config =
             reinterpret_cast<libfts::ParserConfiguration *>(p_config);
@@ -12,9 +12,9 @@ parser_configuration_load(ParserConfiguration *p_config, const char *path) {
         config->set_ngram_length(
             {loader.get_min_ngram_length(), loader.get_max_ngram_length()});
         config->set_cutoff_factor(loader.get_cutoff_factor());
-        return reinterpret_cast<ParserConfiguration *>(config);
+        p_config = reinterpret_cast<ParserConfiguration *>(config);
     } catch (const libfts::ConfigurationException &ex) {
-        return nullptr;
+        p_config = nullptr;
     };
 }
 

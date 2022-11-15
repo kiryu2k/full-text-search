@@ -3,11 +3,11 @@ import search
 import os
 
 config = search.api_loader.parser_configuration_new()
-config = search.api_loader.parser_configuration_load(
+search.api_loader.parser_configuration_load(
     config, "ParserConfig.json".encode("utf-8"))
 
 index = search.api_loader.index_new()
-index = search.api_loader.text_index_read(index, "index".encode("utf-8"))
+search.api_loader.text_index_read(index, "index".encode("utf-8"))
 accessor = search.api_loader.index_accessor_new(index)
 
 os.system("clear")
@@ -18,7 +18,7 @@ while True:
     if (query == "q."):
         break
     result = search.api_loader.search(query.encode("utf-8"), config, accessor)
-    print(result.decode("utf-8"))
+    print(result.decode("utf-8"), end="")
     # searcher.search_result_delete(result)
 
 search.api_loader.index_accessor_delete(accessor)

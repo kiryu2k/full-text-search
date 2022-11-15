@@ -7,7 +7,6 @@ api_loader = ctypes.CDLL(
 api_loader.parser_configuration_new.restype = ctypes.c_void_p
 
 # load configuration from file
-api_loader.parser_configuration_load.restype = ctypes.c_void_p
 api_loader.parser_configuration_load.argtypes = [
     ctypes.c_void_p, ctypes.c_char_p]
 
@@ -18,7 +17,6 @@ api_loader.parser_configuration_delete.argtypes = [ctypes.c_void_p]
 api_loader.index_new.restype = ctypes.c_void_p
 
 # read text index
-api_loader.text_index_read.restype = ctypes.c_void_p
 api_loader.text_index_read.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
 
 # delete index object
