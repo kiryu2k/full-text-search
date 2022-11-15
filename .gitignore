@@ -15,3 +15,6 @@ cmake-build-*/
 
 # Visual Studio Code
 .vscode/
+
+# python
+__pycache__
