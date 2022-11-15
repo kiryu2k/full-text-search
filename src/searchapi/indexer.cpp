@@ -32,10 +32,14 @@ void index_accessor_delete(IndexAccessor *p_accessor) {
 }
 
 void text_index_read(Index *p_idx, const char *path) {
-    auto *idx = reinterpret_cast<libfts::Index *>(p_idx);
-    auto reader = libfts::TextIndexReader::read(path);
-    idx->set_docs(reader.get_docs());
-    idx->set_entries(reader.get_entries());
-    p_idx = reinterpret_cast<Index *>(idx);
+    try {
+        auto *idx = reinterpret_cast<libfts::Index *>(p_idx);
+        auto reader = libfts::TextIndexReader::read(path);
+        idx->set_docs(reader.get_docs());
+        idx->set_entries(reader.get_entries());
+        p_idx = reinterpret_cast<Index *>(idx);
+    } catch (const std::filesystem::filesystem_error &ex) {
+        p_idx = nullptr;
+    }
 }
 }
