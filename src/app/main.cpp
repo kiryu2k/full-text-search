@@ -60,7 +60,7 @@ static void launch_interactive_searcher(
         if (cinput == nullptr) {
             break;
         }
-        std::string query = cinput;
+        const std::string query = cinput;
         if (query.empty()) {
             /* user hits enter on an empty line */
             continue;
