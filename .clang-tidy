@@ -14,7 +14,10 @@ Checks: '
   -cppcoreguidelines-avoid-magic-number,
   -readability-magic-numbers,
   -bugprone-exception-escape,
-  -altera-*
+  -altera-*,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-no-malloc,
+  -hicpp-no-malloc
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'
