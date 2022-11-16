@@ -18,5 +18,5 @@ const char *search(
     }
 }
 
-void search_result_delete(const char *search_result) { delete[] search_result; }
+void search_result_delete(char *search_result) { free(search_result); }
 }

@@ -10,7 +10,7 @@ extern "C" {
 const char *search(
     const char *query, ParserConfiguration *p_config, IndexAccessor *p_index);
 
-void search_result_delete(const char *search_result);
+void search_result_delete(char *search_result);
 #ifdef __cplusplus
 }
 #endif
