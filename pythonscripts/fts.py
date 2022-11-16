@@ -1,5 +1,11 @@
 import ctypes
 
+
+def replace_with_npc(string):
+    # non-printing character
+    return string.replace("\\n", "\n").replace("\\t", "\t")
+
+
 api_loader = ctypes.CDLL(
     "./build/debug/src/searchapi/libsearchapi.so")
 
@@ -30,7 +36,7 @@ api_loader.index_accessor_new.argtypes = [ctypes.c_void_p]
 api_loader.index_accessor_delete.argtypes = [ctypes.c_void_p]
 
 # launch searcher
-api_loader.search.restype = ctypes.c_char_p
+api_loader.search.restype = ctypes.c_void_p
 api_loader.search.argtypes = [
     ctypes.c_char_p, ctypes.c_void_p, ctypes.c_void_p]
 
