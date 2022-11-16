@@ -6,8 +6,7 @@ def replace_with_npc(string):
     return string.replace("\\n", "\n").replace("\\t", "\t")
 
 
-api_loader = ctypes.CDLL(
-    "./build/debug/src/searchapi/libsearchapi.so")
+api_loader = ctypes.CDLL("pythonscripts/libsearchapi.so")
 
 # create parser config object
 api_loader.parser_configuration_new.restype = ctypes.c_void_p

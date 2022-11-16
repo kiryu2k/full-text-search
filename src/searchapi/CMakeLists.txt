@@ -24,3 +24,8 @@ target_link_libraries(
   PRIVATE
     fts
 )
+
+add_custom_command(TARGET ${target_name} 
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   $<TARGET_FILE:${target_name}> ${PROJECT_SOURCE_DIR}/pythonscripts)

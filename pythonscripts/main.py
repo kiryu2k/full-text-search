@@ -1,7 +1,7 @@
 import fts
 
-import os
 import argparse
+import os
 
 config = fts.api_loader.parser_configuration_new()
 fts.api_loader.parser_configuration_load(
