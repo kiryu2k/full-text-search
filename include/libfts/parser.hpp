@@ -25,6 +25,7 @@ private:
     double cutoff_factor_;
 
 public:
+    ParserConfiguration();
     ParserConfiguration(
         std::set<std::string> stop_words,
         const NgramLength &ngram_length,
@@ -33,6 +34,16 @@ public:
     size_t get_min_ngram_length() const { return ngram_length_.min_; }
     size_t get_max_ngram_length() const { return ngram_length_.max_; }
     const std::set<std::string> &get_stop_words() const { return stop_words_; }
+    void set_cutoff_factor(double cutoff_factor) {
+        cutoff_factor_ = cutoff_factor;
+    }
+    void set_ngram_length(const NgramLength &ngram_length) {
+        ngram_length_.min_ = ngram_length.min_;
+        ngram_length_.max_ = ngram_length.max_;
+    }
+    void set_stop_words(std::set<std::string> stop_words) {
+        stop_words_ = std::move(stop_words);
+    }
 };
 
 struct ParsedString {

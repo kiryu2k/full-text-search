@@ -60,7 +60,7 @@ static void launch_interactive_searcher(
         if (cinput == nullptr) {
             break;
         }
-        std::string query = cinput;
+        const std::string query = cinput;
         if (query.empty()) {
             /* user hits enter on an empty line */
             continue;
@@ -107,6 +107,9 @@ int main(int argc, char **argv) {
     } catch (const libfts::ConfigurationException &ex) {
         fmt::print("parse error: {}\n", ex.what());
         return -1;
-    };
+    } catch (const std::filesystem::filesystem_error &ex) {
+        fmt::print("{}\n", ex.what());
+        return -1;
+    }
     return 0;
 }

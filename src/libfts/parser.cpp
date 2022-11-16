@@ -8,6 +8,9 @@
 
 namespace libfts {
 
+ParserConfiguration::ParserConfiguration()
+    : stop_words_{""}, ngram_length_{0, 0}, cutoff_factor_{0} {}
+
 ParserConfiguration::ParserConfiguration(
     std::set<std::string> stop_words,
     const NgramLength &ngram_length,

@@ -15,3 +15,9 @@ cmake-build-*/
 
 # Visual Studio Code
 .vscode/
+
+# python
+__pycache__
+
+# shared libs
+*.so
