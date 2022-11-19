@@ -25,12 +25,7 @@ while True:
         break
     result = fts.ctypes.c_char_p(fts.api_loader.search(
         query.encode("utf-8"), config, accessor))
-    # Remove the first 2 and the last characters of the resulting
-    # C string, bringing it to str python data type.
-    # The resulting string has '\\t' and '\\n' instead of
-    # non-printing character (npc), so we call fts.replace_with_npc()
-    # to replace them with control characters.
-    print(fts.replace_with_npc(str(result.value)[2:][:-1]), end="")
+    print(str(result.value.decode("utf-8")), end="")
     fts.api_loader.search_result_delete(result)
 
 fts.api_loader.index_accessor_delete(accessor)

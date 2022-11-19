@@ -1,11 +1,5 @@
 import ctypes
 
-
-def replace_with_npc(string):
-    # non-printing character
-    return string.replace("\\n", "\n").replace("\\t", "\t")
-
-
 api_loader = ctypes.CDLL("pythonscripts/libsearchapi.so")
 
 # create parser config object
