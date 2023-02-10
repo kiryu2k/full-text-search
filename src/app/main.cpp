@@ -30,7 +30,8 @@ static void launch_indexer(
             }
         }
     }
-    libfts::TextIndexWriter::write(index_dir, indexer.get_index());
+    libfts::TextIndexWriter writer;
+    writer.write(index_dir, indexer.get_index());
 }
 
 static void launch_searcher(

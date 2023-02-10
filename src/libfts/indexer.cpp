@@ -90,6 +90,134 @@ void TextIndexWriter::write(
     }
 }
 
+static BinaryBuffer write_docs_section(const Index &index) {
+    BinaryBuffer buffer;
+    const std::uint32_t docs_size = index.get_docs().size();
+    buffer.write(&docs_size, sizeof(docs_size));
+    for (const auto &[docs_id, docs] : index.get_docs()) {
+        const std::uint8_t doc_size = docs.size() + 1;
+        buffer.write(&doc_size, sizeof(doc_size));
+        buffer.write(docs.data(), doc_size - 1);
+    }
+    return buffer;
+}
+
+static void serialize(
+    Node *node,
+    BinaryBuffer &buffer,
+    std::unordered_map<Node *, Offsets> &node_to_offsets) {
+    const std::uint32_t children_count = node->children_.size();
+    buffer.write(&children_count, sizeof(children_count));
+    for (const auto &child : node->children_) {
+        const std::uint8_t letter = child.first;
+        buffer.write(&letter, sizeof(letter));
+    }
+    for (std::size_t i = 0; i < children_count; ++i) {
+        const std::uint32_t child_offset = 0xffffffff; // 0
+        buffer.write(&child_offset, sizeof(child_offset));
+    }
+    const std::uint8_t is_leaf = node->is_leaf_;
+    buffer.write(&is_leaf, sizeof(is_leaf));
+    if (node->is_leaf_) {
+        buffer.write(&node->entry_offset_, sizeof(node->entry_offset_));
+    }
+    for (const auto &child : node->children_) {
+        node_to_offsets[child.second.get()].self_offset = buffer.size();
+        node_to_offsets[node].children_offsets.push_back(buffer.size());
+        serialize(child.second.get(), buffer, node_to_offsets);
+    }
+}
+
+static void update_child_offsets(
+    BinaryBuffer &buffer,
+    std::unordered_map<Node *, Offsets> &node_to_offsets) {
+    for (const auto &[node, offsets] : node_to_offsets) {
+        std::size_t write_offset =
+            offsets.self_offset + 4 + node->children_.size();
+        for (const auto &child_offset : offsets.children_offsets) {
+            buffer.write_to(&child_offset, sizeof(child_offset), write_offset);
+            write_offset += sizeof(child_offset);
+        }
+    }
+}
+
+static BinaryBuffer write_dictionary_section(
+    const Index &index, std::vector<std::uint32_t> &entry_offset) {
+    BinaryBuffer buffer;
+    Trie trie;
+    std::size_t i = 0;
+    for (const auto &[terms, entries] : index.get_entries()) {
+        trie.insert(terms, entry_offset[i]);
+        ++i;
+    }
+    std::unordered_map<Node *, Offsets> node_to_offsets;
+    serialize(trie.root(), buffer, node_to_offsets);
+    update_child_offsets(buffer, node_to_offsets);
+    return buffer;
+}
+
+static BinaryBuffer write_entries_section(
+    const Index &index, std::vector<std::uint32_t> &entry_offset) {
+    BinaryBuffer buffer;
+    entry_offset.push_back(0);
+    for (const auto &[terms, entries] : index.get_entries()) {
+        const std::uint32_t doc_count = entries.size();
+        buffer.write(&doc_count, sizeof(doc_count));
+        for (const auto &[doc_id, positions] : entries) {
+            const std::uint32_t doc_offset = doc_id;
+            const std::uint32_t pos_count = positions.size();
+            buffer.write(&doc_offset, sizeof(doc_offset));
+            buffer.write(&pos_count, sizeof(pos_count));
+            for (const auto &position : positions) {
+                const std::uint32_t pos = position;
+                buffer.write(&pos, sizeof(pos));
+            }
+        }
+        entry_offset.push_back(buffer.size()); //  - entry_offset.back()
+    }
+    return buffer;
+}
+
+static BinaryBuffer write_header_section() {
+    BinaryBuffer buffer;
+    const std::uint8_t section_count = 3;
+    buffer.write(&section_count, sizeof(section_count));
+    std::vector<std::string> section_name = {"dictionary", "entries", "docs"};
+    for (const auto &section : section_name) {
+        const std::uint8_t section_size = section.size() + 1;
+        buffer.write(&section_size, sizeof(section_size));
+        buffer.write(section.data(), section_size - 1);
+        const std::uint32_t section_offset = 3;
+        buffer.write(&section_offset, sizeof(section_offset));
+    }
+    return buffer;
+}
+
+void BinaryIndexWriter::write(
+    const std::filesystem::path &path, const Index &index) {
+    auto header_buffer = write_header_section();
+    const auto docs_buffer = write_docs_section(index);
+    std::vector<std::uint32_t> entry_offset;
+    const auto entries_buffer = write_entries_section(index, entry_offset);
+    std::uint32_t dictionary_offset = header_buffer.size();
+    header_buffer.write_to(&dictionary_offset, sizeof(dictionary_offset), 12);
+    auto dictionary_buffer = write_dictionary_section(index, entry_offset);
+    std::uint32_t entries_offset = dictionary_offset + dictionary_buffer.size();
+    header_buffer.write_to(&entries_offset, sizeof(entries_offset), 24);
+    std::uint32_t docs_offset = entries_offset + entries_buffer.size();
+    header_buffer.write_to(&docs_offset, sizeof(docs_offset), 33);
+    std::ofstream file(path / "binary", std::ios::binary);
+    // file.write(header_buffer.data_.data(), header_buffer.data_.size());
+    // file.write(dictionary_buffer.data_.data(),
+    // dictionary_buffer.data_.size()); file.write(entries_buffer.data_.data(),
+    // entries_buffer.data_.size()); file.write(docs_buffer.data_.data(),
+    // docs_buffer.data_.size());
+    header_buffer.write_to_file(file);
+    dictionary_buffer.write_to_file(file);
+    entries_buffer.write_to_file(file);
+    docs_buffer.write_to_file(file);
+}
+
 static void
 parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
     std::fstream file(path, std::fstream::in);
@@ -137,10 +265,47 @@ Index TextIndexReader::read(const std::filesystem::path &path) {
     return {docs, entries};
 }
 
+void BinaryBuffer::write(const void *data, size_t size) {
+    const auto *data_start_address = static_cast<const char *>(data);
+    std::copy(
+        data_start_address,
+        data_start_address + size,
+        std::back_inserter(data_));
+}
+
+void BinaryBuffer::write_to(const void *data, size_t size, size_t offset) {
+    const auto *data_start_address = static_cast<const char *>(data);
+    auto offset_iter = data_.begin();
+    std::advance(offset_iter, offset);
+    data_.erase(offset_iter, offset_iter + size); // mb delete
+    std::copy(
+        data_start_address,
+        data_start_address + size,
+        std::inserter(data_, offset_iter)); // offset_iter
+}
+
+void BinaryBuffer::write_to_file(std::ofstream &file) const {
+    file.write(data_.data(), data_.size());
+}
+
 std::string generate_hash(const std::string &term) {
     std::string hash_hex_term;
     picosha2::hash256_hex_string(term, hash_hex_term);
     return hash_hex_term.substr(0, c_term_hash_size);
+}
+
+void Trie::insert(const std::string &word, std::uint32_t entry_offset) {
+    Node *current = &root_;
+    for (const auto &symbol : word) {
+        if (current->children_.find(symbol) == current->children_.end()) {
+            current->children_[symbol] = std::make_unique<Node>();
+        }
+        current = current->children_[symbol].get();
+    }
+    current->entry_offset_ = entry_offset;
+    if ((!current->is_leaf_) && (current != &root_)) {
+        current->is_leaf_ = true;
+    }
 }
 
 } // namespace libfts

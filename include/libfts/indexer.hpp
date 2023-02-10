@@ -3,6 +3,7 @@
 #include <libfts/parser.hpp>
 
 #include <map>
+#include <unordered_map>
 
 namespace libfts {
 
@@ -61,13 +62,65 @@ public:
     size_t get_document_count() const { return index_.get_docs().size(); }
 };
 
-struct TextIndexWriter {
-    static void write(const std::filesystem::path &path, const Index &index);
+class IndexWriter {
+public:
+    virtual ~IndexWriter() = default;
+    virtual void
+    write(const std::filesystem::path &path, const Index &index) = 0;
+};
+
+class TextIndexWriter : public IndexWriter {
+public:
+    void write(const std::filesystem::path &path, const Index &index) override;
+};
+
+class BinaryIndexWriter : public IndexWriter {
+public:
+    void write(const std::filesystem::path &path, const Index &index) override;
 };
 
 struct TextIndexReader {
     static Index read(const std::filesystem::path &path);
 };
+
+class BinaryBuffer {
+private:
+    std::vector<char> data_;
+
+public:
+    void write(const void *data, size_t size);
+    void write_to(const void *data, size_t size, size_t offset);
+    void write_to_file(std::ofstream &file) const;
+    std::size_t size() const { return data_.size(); }
+};
+
+struct Node {
+    std::map<char, std::unique_ptr<Node>> children_;
+    std::uint32_t entry_offset_ = 0;
+    bool is_leaf_ = false;
+};
+
+class Trie {
+private:
+    Node root_;
+
+public:
+    void insert(const std::string &word, std::uint32_t entry_offset);
+    Node *root() { return &root_; }
+};
+
+struct Offsets {
+    std::uint32_t self_offset = 0;
+    std::vector<std::uint32_t> children_offsets;
+};
+
+// class BinaryReader {
+// public:
+//     const char *data_;
+//     const char *current_;
+//     BinaryReader(const char *buf);
+//     void read(void *dest, std::size_t size);
+// };
 
 std::string generate_hash(const std::string &Term);
 
