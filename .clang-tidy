@@ -17,7 +17,8 @@ Checks: '
   -altera-*,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-no-malloc,
-  -hicpp-no-malloc
+  -hicpp-no-malloc,
+  -misc-non-private-member-variables-in-classes
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'
@@ -330,7 +331,7 @@ CheckOptions:
   - key:             readability-suspicious-call-argument.Abbreviation
     value:           'true'
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value:           'false'
+    value:           'true'
   - key:             cert-dcl37-c.AggressiveDependentMemberLookup
     value:           'false'
   - key:             readability-identifier-length.MinimumLoopCounterNameLength
@@ -546,7 +547,7 @@ CheckOptions:
   - key:             cert-dcl51-cpp.Invert
     value:           'false'
   - key:             hicpp-special-member-functions.AllowSoleDefaultDtor
-    value:           'false'
+    value:           'true'
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
     value:           'false'
   - key:             modernize-make-unique.IgnoreMacros
