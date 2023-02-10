@@ -15,9 +15,10 @@ TEST(IndexerTest, AddMultipleDocuments) {
     idx.add_document(200311, "The Matrix Revolutions", config);
     char dir_name_template[] = "/tmp/index_XXXXXX";
     char *temporary_dir_name = mkdtemp(dir_name_template);
-    libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
+    libfts::TextIndexWriter writer;
+    writer.write(temporary_dir_name, idx.get_index());
     idx.add_document(200458, "The Matrix in the red bottoms MATR", config);
-    libfts::TextIndexWriter::write(temporary_dir_name, idx.get_index());
+    writer.write(temporary_dir_name, idx.get_index());
     const auto idx2 = libfts::TextIndexReader::read(temporary_dir_name);
     EXPECT_EQ(idx.get_index().get_docs(), idx2.get_docs());
     EXPECT_EQ(idx.get_index().get_entries(), idx2.get_entries());
@@ -79,4 +80,29 @@ TEST(IndexerTest, GetDocumentsByTerm) {
         EXPECT_EQ(accessor.get_documents_by_term("bye"), expected_docs);
     } catch (libfts::AccessorException &ex) {
     };
+}
+
+TEST(IndexerTest, BinaryIndex) {
+    const std::filesystem::path path(c_absolute_path);
+    const auto config = libfts::load_config(path / "ParserConfig.json");
+    // const std::set<std::string> stop_words;
+    // const libfts::NgramLength ngram_length = {4, 5};
+    // const double cutoff_factor = 0;
+    // const libfts::ParserConfiguration config(
+    //     stop_words, ngram_length, cutoff_factor);
+    libfts::IndexBuilder idx;
+    idx.add_document(100, "pot", config);
+    idx.add_document(125, "past", config);
+    idx.add_document(3123, "pass", config);
+    idx.add_document(54334, "part", config);
+    char dir_name_template[] = "/tmp/index_XXXXXX";
+    char *temporary_dir_name = mkdtemp(dir_name_template);
+    libfts::BinaryIndexWriter writer;
+    writer.write(temporary_dir_name, idx.get_index());
+    libfts::TextIndexWriter text_writer;
+    text_writer.write(temporary_dir_name, idx.get_index());
+    const auto idx2 = libfts::TextIndexReader::read(temporary_dir_name);
+    // EXPECT_EQ(idx.get_index().get_docs(), idx2.get_docs());
+    // EXPECT_EQ(idx.get_index().get_entries(), idx2.get_entries());
+    std::filesystem::remove_all(temporary_dir_name);
 }
