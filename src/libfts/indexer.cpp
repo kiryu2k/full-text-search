@@ -128,31 +128,98 @@ std::size_t TextIndexAccessor::get_document_count() const {
         });
 }
 
-BinaryIndexAccessor::BinaryIndexAccessor(
-    [[maybe_unused]] const char *data, [[maybe_unused]] Header &header) {
-    BinaryReader reader(data);
-    reader.move(header.section_offset("dictionary"));
-    std::size_t dictionary_section_size =
-        header.section_offset("entries") - header.section_offset("dictionary");
-    std::unique_ptr<char> dictionary_data = std::make_unique<char>();
-    reader.read(dictionary_data.get(), dictionary_section_size);
-    dictionary_ = std::make_unique<DictionaryAccessor>(dictionary_data.get());
-    std::size_t entries_section_size =
-        header.section_offset("docs") - header.section_offset("entries");
-    std::unique_ptr<char> entries_data = std::make_unique<char>();
-    reader.read(entries_data.get(), entries_section_size);
-    entries_ = std::make_unique<EntriesAccessor>(entries_data.get());
-    docs_ = std::make_unique<DocumentsAccessor>(reader.current());
+BinaryIndexAccessor::BinaryIndexAccessor(const char *data, Header &header)
+    : data_(data), header_(header) {}
+
+std::uint32_t BinaryIndexAccessor::retrieve(const std::string &word) {
+    BinaryReader reader(data_);
+    reader.move(header_.section_offset("dictionary"));
+    DictionaryAccessor dictionary(reader.current());
+    return dictionary.retrieve(word);
+}
+
+Entry BinaryIndexAccessor::get_term_infos(std::uint32_t entry_offset) {
+    BinaryReader reader(data_);
+    reader.move(header_.section_offset("entries"));
+    EntriesAccessor entries(reader.current());
+    return entries.get_term_infos(entry_offset);
+}
+
+Doc BinaryIndexAccessor::get_document_by_id(DocId identifier) const {
+    BinaryReader reader(data_);
+    reader.move(header_.section_offset("docs"));
+    DocumentsAccessor docs(reader.current());
+    return docs.get_document_by_id(identifier);
 }
 
 std::size_t BinaryIndexAccessor::get_document_count() const {
-    return docs_.get()->get_document_count();
+    BinaryReader reader(data_);
+    reader.move(header_.section_offset("docs"));
+    DocumentsAccessor docs(reader.current());
+    return docs.get_document_count();
 }
 
-// Doc DocumentsAccessor::get_document_by_id(DocId identifier) const {
-//     BinaryReader reader(data_);
+/* доделать!!!!!! */
+std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
+    BinaryReader reader(data_);
+    for (const auto &symbol : word) {
+        std::uint32_t child_offset = 0;
+        std::uint32_t children_count = 0;
+        reader.read(&children_count, sizeof(children_count));
+        for (std::size_t j = 0; j < children_count; ++j) {
+            std::uint8_t letter = 0;
+            reader.read(&letter, sizeof(letter));
+            if (letter == symbol) {
+                fmt::print("{} {}\n", letter, children_count);
+                reader.move(children_count - j + 4 * j);
+                // fmt::print("{}\n", children_count - j + 4 * j);
+                reader.read(&child_offset, sizeof(child_offset));
+                fmt::print("{}\n", child_offset);
+                // reader.move((children_count - j - 1) * 4);
+                // std::vector<char> test1(child_offset);
+                // fmt::print("{}\n", test1.capacity());
+                break;
+            }
+        }
+        reader.move_back_to_start();
+        reader.move(child_offset);
+    }
+    std::uint32_t entry_offset = 0;
+    reader.read(&entry_offset, sizeof(entry_offset));
+    return entry_offset;
+}
 
-// }
+Entry EntriesAccessor::get_term_infos(std::uint32_t entry_offset) {
+    BinaryReader reader(data_);
+    Entry term_infos;
+    reader.move(entry_offset);
+    std::uint32_t doc_count = 0;
+    reader.read(&doc_count, sizeof(doc_count));
+    for (std::size_t i = 0; i < doc_count; ++i) {
+        std::uint32_t doc_offset = 0;
+        reader.read(&doc_offset, sizeof(doc_offset));
+        std::uint32_t pos_count = 0;
+        reader.read(&pos_count, sizeof(pos_count));
+        Pos positions;
+        for (std::size_t j = 0; j < pos_count; ++j) {
+            std::uint32_t pos = 0;
+            reader.read(&pos, sizeof(pos));
+            positions.push_back(pos);
+        }
+        term_infos[doc_offset] = positions;
+    }
+    return term_infos;
+}
+
+Doc DocumentsAccessor::get_document_by_id(DocId identifier) const {
+    BinaryReader reader(data_);
+    reader.move(identifier);
+    std::uint8_t length = 0;
+    reader.read(&length, sizeof(length));
+    Doc document(length - 1, ' ');
+    reader.read(document.data(), document.length());
+    return document;
+}
 
 std::size_t DocumentsAccessor::get_document_count() const {
     BinaryReader reader(data_);
@@ -245,6 +312,7 @@ static BinaryBuffer write_dictionary_section(
     Trie trie;
     std::size_t iter = 0;
     for (const auto &[terms, entries] : index.get_entries()) {
+        fmt::print("{}: {}\n", terms, entry_offset[iter]);
         trie.insert(terms, entry_offset[iter]);
         ++iter;
     }
@@ -414,8 +482,9 @@ Header::Header(const char *data) {
     }
 }
 
-SectionOffset Header::section_offset(const SectionName &name) {
-    return sections_[name];
+SectionOffset Header::section_offset(const SectionName &name) const {
+    const auto offset = sections_.find(name);
+    return offset->second;
 }
 
 } // namespace libfts

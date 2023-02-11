@@ -57,10 +57,6 @@ class IndexAccessor {
 public:
     virtual ~IndexAccessor() = default;
     virtual Doc get_document_by_id(DocId identifier) const = 0;
-    virtual std::vector<DocId>
-    get_documents_by_term(const Term &term) const = 0;
-    virtual Pos get_term_positions_in_document(
-        const Term &term, DocId identifier) const = 0;
     virtual std::size_t get_document_count() const = 0;
 };
 
@@ -71,10 +67,10 @@ private:
 public:
     explicit TextIndexAccessor(std::filesystem::path index_path);
     Doc get_document_by_id(DocId identifier) const override;
-    std::vector<DocId> get_documents_by_term(const Term &term) const override;
-    Pos get_term_positions_in_document(
-        const Term &term, DocId identifier) const override;
     std::size_t get_document_count() const override;
+    std::vector<DocId> get_documents_by_term(const Term &term) const;
+    Pos
+    get_term_positions_in_document(const Term &term, DocId identifier) const;
 };
 
 class Header {
@@ -85,7 +81,7 @@ private:
 public:
     explicit Header(const char *data);
     std::uint8_t section_count() const { return section_count_; }
-    SectionOffset section_offset(const SectionName &name);
+    SectionOffset section_offset(const SectionName &name) const;
 };
 
 class DictionaryAccessor {
@@ -94,6 +90,7 @@ private:
 
 public:
     explicit DictionaryAccessor(const char *data) : data_(data) {}
+    std::uint32_t retrieve(const std::string &word);
 };
 
 class EntriesAccessor {
@@ -102,7 +99,7 @@ private:
 
 public:
     explicit EntriesAccessor(const char *data) : data_(data) {}
-    // get_term_infos???
+    Entry get_term_infos(std::uint32_t entry_offset);
 };
 
 class DocumentsAccessor {
@@ -111,21 +108,21 @@ private:
 
 public:
     explicit DocumentsAccessor(const char *data) : data_(data) {}
-    // Doc get_document_by_id(DocId identifier) const;
+    Doc get_document_by_id(DocId identifier) const;
     std::size_t get_document_count() const;
 };
 
-// class BinaryIndexAccessor : public IndexAccessor {
-class BinaryIndexAccessor {
+class BinaryIndexAccessor : public IndexAccessor {
 private:
-    std::unique_ptr<DictionaryAccessor> dictionary_;
-    std::unique_ptr<EntriesAccessor> entries_;
-    std::unique_ptr<DocumentsAccessor> docs_;
+    const char *data_;
+    Header header_;
 
 public:
-    BinaryIndexAccessor(
-        [[maybe_unused]] const char *data, [[maybe_unused]] Header &header);
-    std::size_t get_document_count() const;
+    BinaryIndexAccessor(const char *data, Header &header);
+    std::uint32_t retrieve(const std::string &word);
+    Entry get_term_infos(std::uint32_t entry_offset);
+    Doc get_document_by_id(DocId identifier) const override;
+    std::size_t get_document_count() const override;
 };
 
 class IndexWriter {
@@ -190,6 +187,7 @@ public:
     void read(void *dest, std::size_t size);
     const char *current() const { return current_; }
     void move(std::size_t size) { current_ += size; }
+    void move_back_to_start() { current_ = data_; }
 };
 
 class BinaryData {

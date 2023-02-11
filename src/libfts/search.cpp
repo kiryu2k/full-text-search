@@ -35,7 +35,7 @@ static bool is_added(const Results &results, const std::string &text) {
 
 static Results cutoff_by_factor(
     const std::map<DocId, double> &search_result,
-    const IndexAccessor &index,
+    const TextIndexAccessor &index,
     double cutoff_factor) {
     Results results;
     const auto max_score = get_max_score(search_result);
@@ -64,7 +64,7 @@ std::string get_string_search_result(const Results &search_result) {
 Results search(
     const std::string &query,
     const ParserConfiguration &config,
-    const IndexAccessor &index) {
+    const TextIndexAccessor &index) {
     const auto parsed_query = parse(query, config);
     std::map<DocId, double> result;
     const auto total_doc_count =

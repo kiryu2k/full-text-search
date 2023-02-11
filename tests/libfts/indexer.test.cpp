@@ -110,7 +110,5 @@ TEST(IndexerTest, BinaryIndex) {
     libfts::BinaryData bin_idx(temporary_dir_name);
     libfts::Header header(bin_idx.data());
     libfts::BinaryIndexAccessor accessor(bin_idx.data(), header);
-    // std::vector<char> test1(accessor.get_document_count());
-    // std::cout << test1.capacity() << "\n";
     std::filesystem::remove_all(temporary_dir_name);
 }
