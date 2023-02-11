@@ -39,8 +39,7 @@ static void launch_searcher(
     const std::filesystem::path &index_dir,
     const std::string &query) {
     try {
-        const libfts::IndexAccessor accessor(
-            libfts::TextIndexReader::read(index_dir));
+        const libfts::TextIndexAccessor accessor(index_dir);
         const auto result = libfts::search(query, config, accessor);
         fmt::print("{}", libfts::get_string_search_result(result));
     } catch (const libfts::AccessorException &ex) {

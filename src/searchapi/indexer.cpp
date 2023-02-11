@@ -20,14 +20,13 @@ void index_delete(Index *p_idx) {
     delete idx;
 }
 
-IndexAccessor *index_accessor_new(Index *p_idx) {
-    auto *idx = reinterpret_cast<libfts::Index *>(p_idx);
-    auto *accessor = new libfts::IndexAccessor(*idx);
-    return reinterpret_cast<IndexAccessor *>(accessor);
+TextIndexAccessor *index_accessor_new(const char *index_path) {
+    auto *accessor = new libfts::TextIndexAccessor(index_path);
+    return reinterpret_cast<TextIndexAccessor *>(accessor);
 }
 
-void index_accessor_delete(IndexAccessor *p_accessor) {
-    auto *accessor = reinterpret_cast<libfts::IndexAccessor *>(p_accessor);
+void index_accessor_delete(TextIndexAccessor *p_accessor) {
+    auto *accessor = reinterpret_cast<libfts::TextIndexAccessor *>(p_accessor);
     delete accessor;
 }
 

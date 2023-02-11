@@ -20,6 +20,9 @@ using Entry = std::map<DocId, Pos>;
 using Term = std::string;
 using Doc = std::string;
 
+using SectionName = std::string;
+using SectionOffset = std::uint32_t;
+
 class IndexBuilder;
 
 class Index {
@@ -51,15 +54,46 @@ public:
 };
 
 class IndexAccessor {
-    Index index_;
+public:
+    virtual ~IndexAccessor() = default;
+    virtual Doc get_document_by_id(DocId identifier) const = 0;
+    virtual std::vector<DocId>
+    get_documents_by_term(const Term &term) const = 0;
+    virtual Pos get_term_positions_in_document(
+        const Term &term, DocId identifier) const = 0;
+    virtual std::size_t get_document_count() const = 0;
+};
+
+class TextIndexAccessor : public IndexAccessor {
+private:
+    std::filesystem::path index_path_;
 
 public:
-    explicit IndexAccessor(Index index) : index_(std::move(index)) {}
-    Doc get_document_by_id(DocId identifier) const;
-    std::vector<DocId> get_documents_by_term(const Term &term) const;
-    Pos
-    get_term_positions_in_document(const Term &term, DocId identifier) const;
-    size_t get_document_count() const { return index_.get_docs().size(); }
+    explicit TextIndexAccessor(std::filesystem::path index_path);
+    Doc get_document_by_id(DocId identifier) const override;
+    std::vector<DocId> get_documents_by_term(const Term &term) const override;
+    Pos get_term_positions_in_document(
+        const Term &term, DocId identifier) const override;
+    std::size_t get_document_count() const override;
+};
+
+class Header {
+private:
+    std::uint8_t section_count_;
+    std::unordered_map<SectionName, SectionOffset> sections_;
+
+public:
+    explicit Header(const char *data);
+    std::uint8_t section_count() const { return section_count_; }
+    SectionOffset section_offset(const SectionName &name);
+};
+
+class BinaryIndexAccessor : public IndexAccessor {
+    // private:
+    //     char *data_;
+
+public:
+    // explicit BinaryIndexAccessor(const char *data, const Header &header);
 };
 
 class IndexWriter {
@@ -97,7 +131,7 @@ public:
 struct Node {
     std::map<char, std::unique_ptr<Node>> children_;
     std::uint32_t entry_offset_ = 0;
-    bool is_leaf_ = false;
+    std::uint8_t is_leaf_ = 0;
 };
 
 class Trie {
@@ -114,13 +148,28 @@ struct Offsets {
     std::vector<std::uint32_t> children_offsets;
 };
 
-// class BinaryReader {
-// public:
-//     const char *data_;
-//     const char *current_;
-//     BinaryReader(const char *buf);
-//     void read(void *dest, std::size_t size);
-// };
+class BinaryReader {
+private:
+    const char *data_;
+    const char *current_;
+
+public:
+    explicit BinaryReader(const char *buf) : data_(buf), current_(buf) {}
+    void read(void *dest, std::size_t size);
+};
+
+class BinaryData {
+private:
+    char *data_;
+    std::size_t size_;
+
+public:
+    // std::vector<char> data_;
+    explicit BinaryData(const std::filesystem::path &index_dir);
+    ~BinaryData();
+    char *data() const { return data_; }
+    std::size_t size() const { return size_; }
+};
 
 std::string generate_hash(const std::string &Term);
 

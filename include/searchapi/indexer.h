@@ -6,15 +6,15 @@ extern "C" {
 
 typedef struct Index Index;
 
-typedef struct IndexAccessor IndexAccessor;
+typedef struct TextIndexAccessor TextIndexAccessor;
 
 Index *index_new();
 
 void index_delete(Index *p_idx);
 
-IndexAccessor *index_accessor_new(Index *p_idx);
+TextIndexAccessor *index_accessor_new(const char *index_path);
 
-void index_accessor_delete(IndexAccessor *p_accessor);
+void index_accessor_delete(TextIndexAccessor *p_accessor);
 
 void text_index_read(Index *p_idx, const char *path);
 

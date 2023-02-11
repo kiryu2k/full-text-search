@@ -3,6 +3,9 @@
 #include <fmt/format.h>
 #include <picosha2/picosha2.h>
 
+#include <fcntl.h>
+#include <sys/mman.h>
+
 #include <fstream>
 
 namespace libfts {
@@ -25,44 +28,109 @@ void IndexBuilder::add_document(
     }
 }
 
-Doc IndexAccessor::get_document_by_id(DocId identifier) const {
-    auto document = index_.get_docs().find(identifier);
-    if (document == index_.get_docs().end()) {
-        throw AccessorException(
-            "failed to get the document by the specified identifier");
+static void
+parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
+    std::fstream file(path, std::fstream::in);
+    std::string term;
+    file >> term;
+    size_t doc_count = 0;
+    file >> doc_count;
+    Entry entry;
+    for (size_t i = 0; i < doc_count; ++i) {
+        size_t document_id = 0;
+        file >> document_id;
+        Pos position;
+        size_t pos_count = 0;
+        file >> pos_count;
+        for (size_t j = 0; j < pos_count; ++j) {
+            size_t pos_num = 0;
+            file >> pos_num;
+            position.push_back(pos_num);
+        }
+        entry[document_id] = position;
     }
-    return document->second;
+    entries[term] = entry;
+}
+
+static void
+parse_document(const std::string &path, std::map<DocId, Doc> &docs) {
+    std::fstream file(path, std::fstream::in);
+    const auto last_delim = path.find_last_of('/') + 1;
+    DocId doc_id = std::stoi(path.substr(last_delim));
+    Doc document;
+    std::getline(file, document);
+    docs[doc_id] = document;
+}
+
+Index TextIndexReader::read(const std::filesystem::path &path) {
+    std::map<DocId, Doc> docs;
+    std::map<Term, Entry> entries;
+    for (const auto &doc : std::filesystem::directory_iterator(path / "docs")) {
+        parse_document(doc.path(), docs);
+    }
+    for (const auto &entry :
+         std::filesystem::directory_iterator(path / "entries")) {
+        parse_entry(entry.path(), entries);
+    }
+    return {docs, entries};
+}
+
+TextIndexAccessor::TextIndexAccessor(std::filesystem::path index_path)
+    : index_path_{std::move(index_path)} {}
+
+Doc TextIndexAccessor::get_document_by_id(DocId identifier) const {
+    std::ifstream file(index_path_ / "docs" / std::to_string(identifier));
+    Doc document;
+    std::getline(file, document);
+    return document;
 }
 
 std::vector<DocId>
-IndexAccessor::get_documents_by_term(const Term &term) const {
-    std::vector<DocId> documents;
-    auto entry = index_.get_entries().find(term);
-    if (entry == index_.get_entries().end()) {
+TextIndexAccessor::get_documents_by_term(const Term &term) const {
+    const auto hash_term = generate_hash(term);
+    std::map<Term, Entry> entries;
+    parse_entry(index_path_ / "entries" / hash_term, entries);
+    if (entries.find(term) == entries.end()) {
         throw AccessorException(
             "failed to get a list of document IDs for the specified term" +
             term);
     }
-    for (const auto &[docs_id, position] : entry->second) {
+    std::vector<DocId> documents;
+    for (const auto &[docs_id, position] : entries[term]) {
         documents.push_back(docs_id);
     }
     return documents;
 }
 
-Pos IndexAccessor::get_term_positions_in_document(
+Pos TextIndexAccessor::get_term_positions_in_document(
     const Term &term, DocId identifier) const {
-    auto entry = index_.get_entries().find(term);
-    if (entry == index_.get_entries().end()) {
+    const auto hash_term = generate_hash(term);
+    std::map<Term, Entry> entries;
+    parse_entry(index_path_ / "entries" / hash_term, entries);
+    if (entries.find(term) == entries.end()) {
         throw AccessorException(
             "failed to get a document for the specified term");
     }
-    auto position = entry->second.find(identifier);
-    if (position == entry->second.end()) {
+    const auto position = entries[term].find(identifier);
+    if (position == entries[term].end()) {
         throw AccessorException(
             "failed to get a list of term positions in documents");
     }
     return position->second;
 }
+
+std::size_t TextIndexAccessor::get_document_count() const {
+    const auto index_dir_iter =
+        std::filesystem::directory_iterator(index_path_ / "docs");
+    return std::count_if(
+        begin(index_dir_iter), end(index_dir_iter), [](auto &entry) {
+            return entry.is_regular_file();
+        });
+}
+
+// BinaryIndexAccessor::BinaryIndexAccessor(const char *data) {
+//     const uint8_t section_count;
+// }
 
 static std::string convert_entries(const Term &term, const Entry &entry) {
     std::string result = fmt::format("{} {} ", term, entry.size());
@@ -116,9 +184,8 @@ static void serialize(
         const std::uint32_t child_offset = 0xffffffff; // 0
         buffer.write(&child_offset, sizeof(child_offset));
     }
-    const std::uint8_t is_leaf = node->is_leaf_;
-    buffer.write(&is_leaf, sizeof(is_leaf));
-    if (node->is_leaf_) {
+    buffer.write(&node->is_leaf_, sizeof(node->is_leaf_));
+    if (node->is_leaf_ == 1) {
         buffer.write(&node->entry_offset_, sizeof(node->entry_offset_));
     }
     for (const auto &child : node->children_) {
@@ -145,10 +212,10 @@ static BinaryBuffer write_dictionary_section(
     const Index &index, std::vector<std::uint32_t> &entry_offset) {
     BinaryBuffer buffer;
     Trie trie;
-    std::size_t i = 0;
+    std::size_t iter = 0;
     for (const auto &[terms, entries] : index.get_entries()) {
-        trie.insert(terms, entry_offset[i]);
-        ++i;
+        trie.insert(terms, entry_offset[iter]);
+        ++iter;
     }
     std::unordered_map<Node *, Offsets> node_to_offsets;
     serialize(trie.root(), buffer, node_to_offsets);
@@ -173,7 +240,7 @@ static BinaryBuffer write_entries_section(
                 buffer.write(&pos, sizeof(pos));
             }
         }
-        entry_offset.push_back(buffer.size()); //  - entry_offset.back()
+        entry_offset.push_back(buffer.size());
     }
     return buffer;
 }
@@ -196,16 +263,26 @@ static BinaryBuffer write_header_section() {
 void BinaryIndexWriter::write(
     const std::filesystem::path &path, const Index &index) {
     auto header_buffer = write_header_section();
+    const std::size_t dictionary_section_offset = 12;
+    const std::size_t entries_section_offset = 24;
+    const std::size_t docs_section_offset = 33;
     const auto docs_buffer = write_docs_section(index);
     std::vector<std::uint32_t> entry_offset;
     const auto entries_buffer = write_entries_section(index, entry_offset);
-    std::uint32_t dictionary_offset = header_buffer.size();
-    header_buffer.write_to(&dictionary_offset, sizeof(dictionary_offset), 12);
-    auto dictionary_buffer = write_dictionary_section(index, entry_offset);
-    std::uint32_t entries_offset = dictionary_offset + dictionary_buffer.size();
-    header_buffer.write_to(&entries_offset, sizeof(entries_offset), 24);
-    std::uint32_t docs_offset = entries_offset + entries_buffer.size();
-    header_buffer.write_to(&docs_offset, sizeof(docs_offset), 33);
+    const std::uint32_t dictionary_offset = header_buffer.size();
+    header_buffer.write_to(
+        &dictionary_offset,
+        sizeof(dictionary_offset),
+        dictionary_section_offset);
+    const auto dictionary_buffer =
+        write_dictionary_section(index, entry_offset);
+    const std::uint32_t entries_offset =
+        dictionary_offset + dictionary_buffer.size();
+    header_buffer.write_to(
+        &entries_offset, sizeof(entries_offset), entries_section_offset);
+    const std::uint32_t docs_offset = entries_offset + entries_buffer.size();
+    header_buffer.write_to(
+        &docs_offset, sizeof(docs_offset), docs_section_offset);
     std::ofstream file(path / "binary", std::ios::binary);
     // file.write(header_buffer.data_.data(), header_buffer.data_.size());
     // file.write(dictionary_buffer.data_.data(),
@@ -216,53 +293,6 @@ void BinaryIndexWriter::write(
     dictionary_buffer.write_to_file(file);
     entries_buffer.write_to_file(file);
     docs_buffer.write_to_file(file);
-}
-
-static void
-parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
-    std::fstream file(path, std::fstream::in);
-    std::string term;
-    file >> term;
-    size_t doc_count = 0;
-    file >> doc_count;
-    Entry entry;
-    for (size_t i = 0; i < doc_count; ++i) {
-        size_t document_id = 0;
-        file >> document_id;
-        Pos position;
-        size_t pos_count = 0;
-        file >> pos_count;
-        for (size_t j = 0; j < pos_count; ++j) {
-            size_t pos_num = 0;
-            file >> pos_num;
-            position.push_back(pos_num);
-        }
-        entry[document_id] = position;
-    }
-    entries[term] = entry;
-}
-
-static void
-parse_document(const std::string &path, std::map<DocId, Doc> &docs) {
-    std::fstream file(path, std::fstream::in);
-    const auto last_delim = path.find_last_of('/') + 1;
-    DocId doc_id = std::stoi(path.substr(last_delim));
-    Doc document;
-    std::getline(file, document);
-    docs[doc_id] = document;
-}
-
-Index TextIndexReader::read(const std::filesystem::path &path) {
-    std::map<DocId, Doc> docs;
-    std::map<Term, Entry> entries;
-    for (const auto &doc : std::filesystem::directory_iterator(path / "docs")) {
-        parse_document(doc.path(), docs);
-    }
-    for (const auto &entry :
-         std::filesystem::directory_iterator(path / "entries")) {
-        parse_entry(entry.path(), entries);
-    }
-    return {docs, entries};
 }
 
 void BinaryBuffer::write(const void *data, size_t size) {
@@ -277,11 +307,12 @@ void BinaryBuffer::write_to(const void *data, size_t size, size_t offset) {
     const auto *data_start_address = static_cast<const char *>(data);
     auto offset_iter = data_.begin();
     std::advance(offset_iter, offset);
-    data_.erase(offset_iter, offset_iter + size); // mb delete
-    std::copy(
-        data_start_address,
-        data_start_address + size,
-        std::inserter(data_, offset_iter)); // offset_iter
+    // data_.erase(offset_iter, offset_iter + size); // mb delete
+    // std::copy(
+    //     data_start_address,
+    //     data_start_address + size,
+    //     std::inserter(data_, offset_iter)); // offset_iter
+    std::copy(data_start_address, data_start_address + size, offset_iter);
 }
 
 void BinaryBuffer::write_to_file(std::ofstream &file) const {
@@ -303,9 +334,54 @@ void Trie::insert(const std::string &word, std::uint32_t entry_offset) {
         current = current->children_[symbol].get();
     }
     current->entry_offset_ = entry_offset;
-    if ((!current->is_leaf_) && (current != &root_)) {
-        current->is_leaf_ = true;
+    if ((current->is_leaf_ == 0) && (current != &root_)) {
+        current->is_leaf_ = 1;
     }
+}
+
+// BinaryReader::BinaryReader(const char *buf) {
+// std::ifstream file(index_dir / "binary", std::ios::binary);
+// std::copy(
+//     std::istreambuf_iterator<char>(file),
+//     std::istreambuf_iterator<char>(),
+//     std::back_inserter(data_));
+// }
+
+void BinaryReader::read(void *dest, std::size_t size) {
+    auto *dest_start_address = static_cast<char *>(dest);
+    std::copy(current_, current_ + size, dest_start_address);
+    current_ += size;
+}
+
+BinaryData::BinaryData(const std::filesystem::path &index_dir) {
+    int fd = open((index_dir / "binary").c_str(), O_RDONLY);
+    size_ = std::filesystem::file_size(index_dir / "binary");
+    data_ = static_cast<char *>(mmap(0, size_, PROT_READ, MAP_PRIVATE, fd, 0));
+    // std::ifstream file(index_dir / "binary", std::ios::binary);
+    // std::copy(
+    //     std::istreambuf_iterator<char>(file),
+    //     std::istreambuf_iterator<char>(),
+    //     std::back_inserter(data_));
+}
+
+BinaryData::~BinaryData() { munmap(data_, size_); }
+
+Header::Header(const char *data) {
+    BinaryReader reader(data);
+    reader.read(&section_count_, sizeof(section_count_));
+    for (std::size_t i = 0; i < section_count_; ++i) {
+        std::uint8_t length;
+        reader.read(&length, sizeof(length));
+        std::string name(length - 1, ' ');
+        reader.read(name.data(), name.length());
+        std::uint32_t section_offset;
+        reader.read(&section_offset, sizeof(section_offset));
+        sections_[name] = section_offset;
+    }
+}
+
+SectionOffset Header::section_offset(const SectionName &name) {
+    return sections_[name];
 }
 
 } // namespace libfts
