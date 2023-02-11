@@ -128,9 +128,38 @@ std::size_t TextIndexAccessor::get_document_count() const {
         });
 }
 
-// BinaryIndexAccessor::BinaryIndexAccessor(const char *data) {
-//     const uint8_t section_count;
+BinaryIndexAccessor::BinaryIndexAccessor(
+    [[maybe_unused]] const char *data, [[maybe_unused]] Header &header) {
+    BinaryReader reader(data);
+    reader.move(header.section_offset("dictionary"));
+    std::size_t dictionary_section_size =
+        header.section_offset("entries") - header.section_offset("dictionary");
+    std::unique_ptr<char> dictionary_data = std::make_unique<char>();
+    reader.read(dictionary_data.get(), dictionary_section_size);
+    dictionary_ = std::make_unique<DictionaryAccessor>(dictionary_data.get());
+    std::size_t entries_section_size =
+        header.section_offset("docs") - header.section_offset("entries");
+    std::unique_ptr<char> entries_data = std::make_unique<char>();
+    reader.read(entries_data.get(), entries_section_size);
+    entries_ = std::make_unique<EntriesAccessor>(entries_data.get());
+    docs_ = std::make_unique<DocumentsAccessor>(reader.current());
+}
+
+std::size_t BinaryIndexAccessor::get_document_count() const {
+    return docs_.get()->get_document_count();
+}
+
+// Doc DocumentsAccessor::get_document_by_id(DocId identifier) const {
+//     BinaryReader reader(data_);
+
 // }
+
+std::size_t DocumentsAccessor::get_document_count() const {
+    BinaryReader reader(data_);
+    std::uint32_t titles_count = 0;
+    reader.read(&titles_count, sizeof(titles_count));
+    return titles_count;
+}
 
 static std::string convert_entries(const Term &term, const Entry &entry) {
     std::string result = fmt::format("{} {} ", term, entry.size());
@@ -158,11 +187,13 @@ void TextIndexWriter::write(
     }
 }
 
-static BinaryBuffer write_docs_section(const Index &index) {
+static BinaryBuffer write_docs_section(
+    const Index &index, std::unordered_map<DocId, std::uint32_t> &doc_offset) {
     BinaryBuffer buffer;
     const std::uint32_t docs_size = index.get_docs().size();
     buffer.write(&docs_size, sizeof(docs_size));
     for (const auto &[docs_id, docs] : index.get_docs()) {
+        doc_offset[docs_id] = buffer.size();
         const std::uint8_t doc_size = docs.size() + 1;
         buffer.write(&doc_size, sizeof(doc_size));
         buffer.write(docs.data(), doc_size - 1);
@@ -224,16 +255,17 @@ static BinaryBuffer write_dictionary_section(
 }
 
 static BinaryBuffer write_entries_section(
-    const Index &index, std::vector<std::uint32_t> &entry_offset) {
+    const Index &index,
+    std::unordered_map<DocId, std::uint32_t> &doc_offset,
+    std::vector<std::uint32_t> &entry_offset) {
     BinaryBuffer buffer;
     entry_offset.push_back(0);
     for (const auto &[terms, entries] : index.get_entries()) {
         const std::uint32_t doc_count = entries.size();
         buffer.write(&doc_count, sizeof(doc_count));
         for (const auto &[doc_id, positions] : entries) {
-            const std::uint32_t doc_offset = doc_id;
             const std::uint32_t pos_count = positions.size();
-            buffer.write(&doc_offset, sizeof(doc_offset));
+            buffer.write(&doc_offset[doc_id], sizeof(doc_offset[doc_id]));
             buffer.write(&pos_count, sizeof(pos_count));
             for (const auto &position : positions) {
                 const std::uint32_t pos = position;
@@ -266,9 +298,11 @@ void BinaryIndexWriter::write(
     const std::size_t dictionary_section_offset = 12;
     const std::size_t entries_section_offset = 24;
     const std::size_t docs_section_offset = 33;
-    const auto docs_buffer = write_docs_section(index);
+    std::unordered_map<DocId, std::uint32_t> doc_offset;
+    const auto docs_buffer = write_docs_section(index, doc_offset);
     std::vector<std::uint32_t> entry_offset;
-    const auto entries_buffer = write_entries_section(index, entry_offset);
+    const auto entries_buffer =
+        write_entries_section(index, doc_offset, entry_offset);
     const std::uint32_t dictionary_offset = header_buffer.size();
     header_buffer.write_to(
         &dictionary_offset,
@@ -370,11 +404,11 @@ Header::Header(const char *data) {
     BinaryReader reader(data);
     reader.read(&section_count_, sizeof(section_count_));
     for (std::size_t i = 0; i < section_count_; ++i) {
-        std::uint8_t length;
+        std::uint8_t length = 0;
         reader.read(&length, sizeof(length));
         std::string name(length - 1, ' ');
         reader.read(name.data(), name.length());
-        std::uint32_t section_offset;
+        std::uint32_t section_offset = 0;
         reader.read(&section_offset, sizeof(section_offset));
         sections_[name] = section_offset;
     }

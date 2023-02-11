@@ -88,12 +88,44 @@ public:
     SectionOffset section_offset(const SectionName &name);
 };
 
-class BinaryIndexAccessor : public IndexAccessor {
-    // private:
-    //     char *data_;
+class DictionaryAccessor {
+private:
+    const char *data_;
 
 public:
-    // explicit BinaryIndexAccessor(const char *data, const Header &header);
+    explicit DictionaryAccessor(const char *data) : data_(data) {}
+};
+
+class EntriesAccessor {
+private:
+    const char *data_;
+
+public:
+    explicit EntriesAccessor(const char *data) : data_(data) {}
+    // get_term_infos???
+};
+
+class DocumentsAccessor {
+private:
+    const char *data_;
+
+public:
+    explicit DocumentsAccessor(const char *data) : data_(data) {}
+    // Doc get_document_by_id(DocId identifier) const;
+    std::size_t get_document_count() const;
+};
+
+// class BinaryIndexAccessor : public IndexAccessor {
+class BinaryIndexAccessor {
+private:
+    std::unique_ptr<DictionaryAccessor> dictionary_;
+    std::unique_ptr<EntriesAccessor> entries_;
+    std::unique_ptr<DocumentsAccessor> docs_;
+
+public:
+    BinaryIndexAccessor(
+        [[maybe_unused]] const char *data, [[maybe_unused]] Header &header);
+    std::size_t get_document_count() const;
 };
 
 class IndexWriter {
@@ -156,6 +188,8 @@ private:
 public:
     explicit BinaryReader(const char *buf) : data_(buf), current_(buf) {}
     void read(void *dest, std::size_t size);
+    const char *current() const { return current_; }
+    void move(std::size_t size) { current_ += size; }
 };
 
 class BinaryData {

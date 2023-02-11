@@ -98,11 +98,6 @@ TEST(IndexerTest, GetDocumentsByTerm) {
 TEST(IndexerTest, BinaryIndex) {
     const std::filesystem::path path(c_absolute_path);
     const auto config = libfts::load_config(path / "ParserConfig.json");
-    // const std::set<std::string> stop_words;
-    // const libfts::NgramLength ngram_length = {4, 5};
-    // const double cutoff_factor = 0;
-    // const libfts::ParserConfiguration config(
-    //     stop_words, ngram_length, cutoff_factor);
     libfts::IndexBuilder idx;
     idx.add_document(100, "pot", config);
     idx.add_document(125, "past", config);
@@ -112,14 +107,10 @@ TEST(IndexerTest, BinaryIndex) {
     char *temporary_dir_name = mkdtemp(dir_name_template);
     libfts::BinaryIndexWriter writer;
     writer.write(temporary_dir_name, idx.get_index());
-    libfts::TextIndexWriter text_writer;
-    text_writer.write(temporary_dir_name, idx.get_index());
-    const auto idx2 = libfts::TextIndexReader::read(temporary_dir_name);
-    // EXPECT_EQ(idx.get_index().get_docs(), idx2.get_docs());
-    // EXPECT_EQ(idx.get_index().get_entries(), idx2.get_entries());
     libfts::BinaryData bin_idx(temporary_dir_name);
     libfts::Header header(bin_idx.data());
-    // std::vector<char> test1(header.section_offset("dictionary"));
+    libfts::BinaryIndexAccessor accessor(bin_idx.data(), header);
+    // std::vector<char> test1(accessor.get_document_count());
     // std::cout << test1.capacity() << "\n";
-    // std::filesystem::remove_all(temporary_dir_name);
+    std::filesystem::remove_all(temporary_dir_name);
 }
