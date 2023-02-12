@@ -110,5 +110,13 @@ TEST(IndexerTest, BinaryIndex) {
     libfts::BinaryData bin_idx(temporary_dir_name);
     libfts::Header header(bin_idx.data());
     libfts::BinaryIndexAccessor accessor(bin_idx.data(), header);
+    // std::vector<char> test1(accessor.retrieve("part"));
+    // std::cout << test1.capacity() << "\n";
+    accessor.retrieve("par");
+    accessor.retrieve("part");
+    accessor.retrieve("pas");
+    accessor.retrieve("pass");
+    accessor.retrieve("past");
+    accessor.retrieve("pot");
     std::filesystem::remove_all(temporary_dir_name);
 }

@@ -162,30 +162,35 @@ std::size_t BinaryIndexAccessor::get_document_count() const {
 /* доделать!!!!!! */
 std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     BinaryReader reader(data_);
+    std::uint32_t children_count = 0;
+    /* look up one by one letter from a source word in serialized trie in
+     * children of node */
     for (const auto &symbol : word) {
         std::uint32_t child_offset = 0;
-        std::uint32_t children_count = 0;
         reader.read(&children_count, sizeof(children_count));
-        for (std::size_t j = 0; j < children_count; ++j) {
+        std::size_t child_pos = children_count;
+        for (std::size_t i = 0; i < children_count; ++i) {
             std::uint8_t letter = 0;
             reader.read(&letter, sizeof(letter));
             if (letter == symbol) {
-                fmt::print("{} {}\n", letter, children_count);
-                reader.move(children_count - j + 4 * j);
-                // fmt::print("{}\n", children_count - j + 4 * j);
-                reader.read(&child_offset, sizeof(child_offset));
-                fmt::print("{}\n", child_offset);
-                // reader.move((children_count - j - 1) * 4);
-                // std::vector<char> test1(child_offset);
-                // fmt::print("{}\n", test1.capacity());
-                break;
+                child_pos = i;
             }
         }
-        reader.move_back_to_start();
-        reader.move(child_offset);
+        reader.move(sizeof(child_offset) * child_pos);
+        reader.read(&child_offset, sizeof(child_offset));
+        if (child_offset != 0) {
+            reader.move_back_to_start();
+            reader.move(child_offset);
+        }
     }
+    /* read leaf node */
+    reader.read(&children_count, sizeof(children_count));
+    reader.move(children_count * 5);
+    std::uint8_t is_leaf = 0;
+    reader.read(&is_leaf, sizeof(is_leaf));
     std::uint32_t entry_offset = 0;
     reader.read(&entry_offset, sizeof(entry_offset));
+    // fmt::print("word = {}\nentry_offset = {}\n", word, entry_offset);
     return entry_offset;
 }
 
@@ -386,11 +391,6 @@ void BinaryIndexWriter::write(
     header_buffer.write_to(
         &docs_offset, sizeof(docs_offset), docs_section_offset);
     std::ofstream file(path / "binary", std::ios::binary);
-    // file.write(header_buffer.data_.data(), header_buffer.data_.size());
-    // file.write(dictionary_buffer.data_.data(),
-    // dictionary_buffer.data_.size()); file.write(entries_buffer.data_.data(),
-    // entries_buffer.data_.size()); file.write(docs_buffer.data_.data(),
-    // docs_buffer.data_.size());
     header_buffer.write_to_file(file);
     dictionary_buffer.write_to_file(file);
     entries_buffer.write_to_file(file);
@@ -409,11 +409,6 @@ void BinaryBuffer::write_to(const void *data, size_t size, size_t offset) {
     const auto *data_start_address = static_cast<const char *>(data);
     auto offset_iter = data_.begin();
     std::advance(offset_iter, offset);
-    // data_.erase(offset_iter, offset_iter + size); // mb delete
-    // std::copy(
-    //     data_start_address,
-    //     data_start_address + size,
-    //     std::inserter(data_, offset_iter)); // offset_iter
     std::copy(data_start_address, data_start_address + size, offset_iter);
 }
 
@@ -441,14 +436,6 @@ void Trie::insert(const std::string &word, std::uint32_t entry_offset) {
     }
 }
 
-// BinaryReader::BinaryReader(const char *buf) {
-// std::ifstream file(index_dir / "binary", std::ios::binary);
-// std::copy(
-//     std::istreambuf_iterator<char>(file),
-//     std::istreambuf_iterator<char>(),
-//     std::back_inserter(data_));
-// }
-
 void BinaryReader::read(void *dest, std::size_t size) {
     auto *dest_start_address = static_cast<char *>(dest);
     std::copy(current_, current_ + size, dest_start_address);
@@ -459,11 +446,6 @@ BinaryData::BinaryData(const std::filesystem::path &index_dir) {
     int fd = open((index_dir / "binary").c_str(), O_RDONLY);
     size_ = std::filesystem::file_size(index_dir / "binary");
     data_ = static_cast<char *>(mmap(0, size_, PROT_READ, MAP_PRIVATE, fd, 0));
-    // std::ifstream file(index_dir / "binary", std::ios::binary);
-    // std::copy(
-    //     std::istreambuf_iterator<char>(file),
-    //     std::istreambuf_iterator<char>(),
-    //     std::back_inserter(data_));
 }
 
 BinaryData::~BinaryData() { munmap(data_, size_); }
