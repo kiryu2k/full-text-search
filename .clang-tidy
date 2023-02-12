@@ -18,7 +18,19 @@ Checks: '
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-no-malloc,
   -hicpp-no-malloc,
-  -misc-non-private-member-variables-in-classes
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-special-member-functions,
+  -hicpp-special-member-functions,
+  -android-cloexec-open,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg,
+  -cppcoreguidelines-pro-type-member-init,
+  -hicpp-member-init,
+  -misc-no-recursion,
+  -bugprone-misplaced-widening-cast,
+  -bugprone-signed-char-misuse,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-avoid-magic-numbers
   '
 WarningsAsErrors: true
 HeaderFilterRegex: '.*/(libfts|app)/'
