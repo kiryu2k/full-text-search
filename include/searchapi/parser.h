@@ -6,9 +6,7 @@ extern "C" {
 
 typedef struct ParserConfiguration ParserConfiguration;
 
-void parser_configuration_load(ParserConfiguration *p_config, const char *path);
-
-ParserConfiguration *parser_configuration_new();
+ParserConfiguration *parser_configuration_new(const char *path);
 
 void parser_configuration_delete(ParserConfiguration *p_config);
 
