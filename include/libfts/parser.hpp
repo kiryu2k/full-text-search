@@ -25,7 +25,6 @@ private:
     double cutoff_factor_;
 
 public:
-    ParserConfiguration();
     ParserConfiguration(
         std::set<std::string> stop_words,
         const NgramLength &ngram_length,

@@ -185,6 +185,8 @@ Pos BinaryIndexAccessor::get_term_positions_in_document(
 std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     BinaryReader reader(data_);
     std::uint32_t children_count = 0;
+    std::uint8_t is_leaf = 0;
+    std::uint32_t entry_offset = 0;
     /* look up one by one letter from a source word in serialized trie in
      * children of node */
     for (const auto &symbol : word) {
@@ -198,8 +200,18 @@ std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
                 child_pos = i;
             }
         }
+        if (child_pos == children_count) {
+            throw AccessorException(
+                "failed to get a list of document IDs for the specified term" +
+                word);
+        }
         reader.move(sizeof(child_offset) * child_pos);
         reader.read(&child_offset, sizeof(child_offset));
+        reader.move(sizeof(child_offset) * (children_count - child_pos - 1));
+        reader.read(&is_leaf, sizeof(is_leaf));
+        if (is_leaf == 1) {
+            reader.read(&entry_offset, sizeof(entry_offset));
+        }
         if (child_offset != 0) {
             reader.move_back_to_start();
             reader.move(child_offset);
@@ -208,9 +220,7 @@ std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     /* read leaf node */
     reader.read(&children_count, sizeof(children_count));
     reader.move(children_count * 5);
-    std::uint8_t is_leaf = 0;
     reader.read(&is_leaf, sizeof(is_leaf));
-    std::uint32_t entry_offset = 0;
     reader.read(&entry_offset, sizeof(entry_offset));
     return entry_offset;
 }
@@ -410,6 +420,7 @@ void BinaryIndexWriter::write(
     const std::uint32_t docs_offset = entries_offset + entries_buffer.size();
     header_buffer.write_to(
         &docs_offset, sizeof(docs_offset), docs_section_offset);
+    std::filesystem::create_directories(path);
     std::ofstream file(path / "binary", std::ios::binary);
     header_buffer.write_to_file(file);
     dictionary_buffer.write_to_file(file);

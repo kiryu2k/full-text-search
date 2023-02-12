@@ -30,10 +30,10 @@ static void launch_indexer(
             }
         }
     }
-    // libfts::TextIndexWriter writer;
-    // writer.write(index_dir, indexer.get_index());
-    libfts::BinaryIndexWriter writer;
-    writer.write(index_dir, indexer.get_index());
+    libfts::TextIndexWriter text_writer;
+    text_writer.write(index_dir, indexer.get_index());
+    libfts::BinaryIndexWriter binary_writer;
+    binary_writer.write(index_dir, indexer.get_index());
 }
 
 static void launch_searcher(

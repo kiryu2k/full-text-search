@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
-#include <iostream>
 
 TEST(IndexerTest, AddMultipleDocuments) {
     const std::filesystem::path path(c_absolute_path);
