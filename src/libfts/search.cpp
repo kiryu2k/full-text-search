@@ -72,7 +72,6 @@ Results search(
         for (const auto &term : word.ngrams_) {
             Pos docs;
             try {
-                // fmt::print("aaa\n");
                 /* if term isn't found in the list of docs, exception will be
                  * thrown */
                 docs = index.get_documents_by_term(term);
@@ -84,11 +83,9 @@ Results search(
             }
             const auto doc_freq = static_cast<double>(docs.size());
             for (const auto &identifier : docs) {
-                // fmt::print("{}\n", docs.size());
                 const auto term_freq = static_cast<double>(
                     index.get_term_positions_in_document(term, identifier)
                         .size());
-                // fmt::print("{}\n", identifier);
                 result[identifier] +=
                     term_freq * log(total_doc_count / doc_freq);
             }

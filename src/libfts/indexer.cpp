@@ -219,7 +219,7 @@ std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     }
     /* read leaf node */
     reader.read(&children_count, sizeof(children_count));
-    reader.move(children_count * 5);
+    reader.move(static_cast<std::size_t>(children_count * 5));
     reader.read(&is_leaf, sizeof(is_leaf));
     reader.read(&entry_offset, sizeof(entry_offset));
     return entry_offset;
@@ -444,7 +444,7 @@ void BinaryBuffer::write_to(const void *data, size_t size, size_t offset) {
 }
 
 void BinaryBuffer::write_to_file(std::ofstream &file) const {
-    file.write(data_.data(), data_.size());
+    file.write(data_.data(), static_cast<std::streamsize>(data_.size()));
 }
 
 std::string generate_hash(const std::string &term) {
@@ -474,9 +474,10 @@ void BinaryReader::read(void *dest, std::size_t size) {
 }
 
 BinaryData::BinaryData(const std::filesystem::path &index_dir) {
-    int fd = open((index_dir / "binary").c_str(), O_RDONLY);
+    int file = open((index_dir / "binary").c_str(), O_RDONLY);
     size_ = std::filesystem::file_size(index_dir / "binary");
-    data_ = static_cast<char *>(mmap(0, size_, PROT_READ, MAP_PRIVATE, fd, 0));
+    data_ = static_cast<char *>(
+        mmap(nullptr, size_, PROT_READ, MAP_PRIVATE, file, 0));
 }
 
 BinaryData::~BinaryData() { munmap(data_, size_); }
