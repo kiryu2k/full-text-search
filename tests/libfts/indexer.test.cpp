@@ -110,13 +110,26 @@ TEST(IndexerTest, BinaryIndex) {
     libfts::BinaryData bin_idx(temporary_dir_name);
     libfts::Header header(bin_idx.data());
     libfts::BinaryIndexAccessor accessor(bin_idx.data(), header);
-    // std::vector<char> test1(accessor.retrieve("part"));
-    // std::cout << test1.capacity() << "\n";
-    accessor.retrieve("par");
-    accessor.retrieve("part");
-    accessor.retrieve("pas");
-    accessor.retrieve("pass");
-    accessor.retrieve("past");
-    accessor.retrieve("pot");
+    std::vector<std::uint32_t> entry_offsets = {0, 16, 32, 60, 76, 92};
+    std::vector<std::string> terms = {
+        "par", "part", "pas", "pass", "past", "pot"};
+    for (std::size_t i = 0; i < terms.size(); ++i) {
+        EXPECT_EQ(accessor.retrieve(terms[i]), entry_offsets[i]);
+    }
+    std::vector<libfts::Entry> term_infos = {
+        {{18, {0}}},
+        {{18, {0}}},
+        {{8, {0}}, {13, {0}}},
+        {{13, {0}}},
+        {{8, {0}}},
+        {{4, {0}}}};
+    for (std::size_t i = 0; i < entry_offsets.size(); ++i) {
+        EXPECT_EQ(accessor.get_term_infos(entry_offsets[i]), term_infos[i]);
+    }
+    std::vector<std::string> documents = {"pot", "pass", "part", "past"};
+    std::vector<std::size_t> doc_offsets = {4, 13, 18, 8};
+    for (std::size_t i = 0; i < documents.size(); ++i) {
+        EXPECT_EQ(accessor.get_document_by_id(doc_offsets[i]), documents[i]);
+    }
     std::filesystem::remove_all(temporary_dir_name);
 }
