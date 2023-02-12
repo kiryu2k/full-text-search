@@ -131,14 +131,14 @@ std::size_t TextIndexAccessor::get_document_count() const {
 BinaryIndexAccessor::BinaryIndexAccessor(const char *data, Header &header)
     : data_(data), header_(header) {}
 
-std::uint32_t BinaryIndexAccessor::retrieve(const std::string &word) {
+std::uint32_t BinaryIndexAccessor::retrieve(const std::string &word) const {
     BinaryReader reader(data_);
     reader.move(header_.section_offset("dictionary"));
     DictionaryAccessor dictionary(reader.current());
     return dictionary.retrieve(word);
 }
 
-Entry BinaryIndexAccessor::get_term_infos(std::uint32_t entry_offset) {
+Entry BinaryIndexAccessor::get_term_infos(std::uint32_t entry_offset) const {
     BinaryReader reader(data_);
     reader.move(header_.section_offset("entries"));
     EntriesAccessor entries(reader.current());
@@ -159,7 +159,29 @@ std::size_t BinaryIndexAccessor::get_document_count() const {
     return docs.get_document_count();
 }
 
-/* доделать!!!!!! */
+std::vector<DocId>
+BinaryIndexAccessor::get_documents_by_term(const Term &term) const {
+    const auto entry_offset = retrieve(term);
+    const auto term_infos = get_term_infos(entry_offset);
+    std::vector<DocId> documents;
+    for (const auto &[offset, positions] : term_infos) {
+        documents.push_back(offset);
+    }
+    return documents;
+}
+
+Pos BinaryIndexAccessor::get_term_positions_in_document(
+    const Term &term, DocId identifier) const {
+    const auto entry_offset = retrieve(term);
+    const auto term_infos = get_term_infos(entry_offset);
+    const auto positions = term_infos.find(identifier);
+    if (positions == term_infos.end()) {
+        throw AccessorException(
+            "failed to get a list of term positions in documents");
+    }
+    return positions->second;
+}
+
 std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     BinaryReader reader(data_);
     std::uint32_t children_count = 0;
@@ -190,7 +212,6 @@ std::uint32_t DictionaryAccessor::retrieve(const std::string &word) {
     reader.read(&is_leaf, sizeof(is_leaf));
     std::uint32_t entry_offset = 0;
     reader.read(&entry_offset, sizeof(entry_offset));
-    // fmt::print("word = {}\nentry_offset = {}\n", word, entry_offset);
     return entry_offset;
 }
 
@@ -317,7 +338,6 @@ static BinaryBuffer write_dictionary_section(
     Trie trie;
     std::size_t iter = 0;
     for (const auto &[terms, entries] : index.get_entries()) {
-        fmt::print("{}: {}\n", terms, entry_offset[iter]);
         trie.insert(terms, entry_offset[iter]);
         ++iter;
     }

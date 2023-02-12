@@ -58,6 +58,10 @@ public:
     virtual ~IndexAccessor() = default;
     virtual Doc get_document_by_id(DocId identifier) const = 0;
     virtual std::size_t get_document_count() const = 0;
+    virtual std::vector<DocId>
+    get_documents_by_term(const Term &term) const = 0;
+    virtual Pos get_term_positions_in_document(
+        const Term &term, DocId identifier) const = 0;
 };
 
 class TextIndexAccessor : public IndexAccessor {
@@ -68,9 +72,9 @@ public:
     explicit TextIndexAccessor(std::filesystem::path index_path);
     Doc get_document_by_id(DocId identifier) const override;
     std::size_t get_document_count() const override;
-    std::vector<DocId> get_documents_by_term(const Term &term) const;
-    Pos
-    get_term_positions_in_document(const Term &term, DocId identifier) const;
+    std::vector<DocId> get_documents_by_term(const Term &term) const override;
+    Pos get_term_positions_in_document(
+        const Term &term, DocId identifier) const override;
 };
 
 class Header {
@@ -119,10 +123,13 @@ private:
 
 public:
     BinaryIndexAccessor(const char *data, Header &header);
-    std::uint32_t retrieve(const std::string &word);
-    Entry get_term_infos(std::uint32_t entry_offset);
+    std::uint32_t retrieve(const std::string &word) const;
+    Entry get_term_infos(std::uint32_t entry_offset) const;
     Doc get_document_by_id(DocId identifier) const override;
     std::size_t get_document_count() const override;
+    std::vector<DocId> get_documents_by_term(const Term &term) const override;
+    Pos get_term_positions_in_document(
+        const Term &term, DocId identifier) const override;
 };
 
 class IndexWriter {
@@ -196,7 +203,6 @@ private:
     std::size_t size_;
 
 public:
-    // std::vector<char> data_;
     explicit BinaryData(const std::filesystem::path &index_dir);
     ~BinaryData();
     char *data() const { return data_; }

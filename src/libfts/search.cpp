@@ -35,7 +35,7 @@ static bool is_added(const Results &results, const std::string &text) {
 
 static Results cutoff_by_factor(
     const std::map<DocId, double> &search_result,
-    const TextIndexAccessor &index,
+    const IndexAccessor &index,
     double cutoff_factor) {
     Results results;
     const auto max_score = get_max_score(search_result);
@@ -54,9 +54,8 @@ static Results cutoff_by_factor(
 std::string get_string_search_result(const Results &search_result) {
     std::string result;
     size_t ordinal_num = 1;
-    for (const auto &[id, score, text] : search_result) {
-        result +=
-            fmt::format("{}\t{}\t{}\t{}\n", ordinal_num++, score, id, text);
+    for (const auto &[document_id, score, text] : search_result) {
+        result += fmt::format("{}\t{}\t{}\n", ordinal_num++, score, text);
     }
     return result;
 }
@@ -64,7 +63,7 @@ std::string get_string_search_result(const Results &search_result) {
 Results search(
     const std::string &query,
     const ParserConfiguration &config,
-    const TextIndexAccessor &index) {
+    const IndexAccessor &index) {
     const auto parsed_query = parse(query, config);
     std::map<DocId, double> result;
     const auto total_doc_count =

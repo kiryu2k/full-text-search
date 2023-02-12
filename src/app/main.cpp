@@ -30,7 +30,9 @@ static void launch_indexer(
             }
         }
     }
-    libfts::TextIndexWriter writer;
+    // libfts::TextIndexWriter writer;
+    // writer.write(index_dir, indexer.get_index());
+    libfts::BinaryIndexWriter writer;
     writer.write(index_dir, indexer.get_index());
 }
 
@@ -39,7 +41,10 @@ static void launch_searcher(
     const std::filesystem::path &index_dir,
     const std::string &query) {
     try {
-        const libfts::TextIndexAccessor accessor(index_dir);
+        // const libfts::TextIndexAccessor accessor(index_dir);
+        libfts::BinaryData index(index_dir);
+        libfts::Header header(index.data());
+        libfts::BinaryIndexAccessor accessor(index.data(), header);
         const auto result = libfts::search(query, config, accessor);
         fmt::print("{}", libfts::get_string_search_result(result));
     } catch (const libfts::AccessorException &ex) {

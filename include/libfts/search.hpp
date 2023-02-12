@@ -17,6 +17,6 @@ std::string get_string_search_result(const Results &search_result);
 Results search(
     const std::string &query,
     const ParserConfiguration &config,
-    const TextIndexAccessor &index);
+    const IndexAccessor &index);
 
 } // namespace libfts
