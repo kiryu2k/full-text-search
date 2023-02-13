@@ -28,7 +28,7 @@ TEST(SearchTest, CalculateScore) {
             {101, log(3.0 / 2), "Byeee World"},
             {102, log(3.0 / 2), "Hello Earth"}};
         const auto result = libfts::search(query, config, accessor);
-        for (size_t i = 0; i < result.size(); ++i) {
+        for (std::size_t i = 0; i < result.size(); ++i) {
             EXPECT_EQ(result[i].document_id_, expected_result[i].document_id_);
             EXPECT_EQ(result[i].score_, expected_result[i].score_);
             EXPECT_EQ(result[i].text_, expected_result[i].text_);
@@ -65,7 +65,7 @@ TEST(SearchTest, CalculateAnotherOneScore) {
         const libfts::Results expected_result = {
             {101, log(3.0 / 1), "Bye Wor"}, {102, log(3.0 / 1), "Hel Ear"}};
         const auto result = libfts::search(query, config, accessor);
-        for (size_t i = 0; i < result.size(); ++i) {
+        for (std::size_t i = 0; i < result.size(); ++i) {
             EXPECT_EQ(result[i].document_id_, expected_result[i].document_id_);
             EXPECT_EQ(result[i].score_, expected_result[i].score_);
             EXPECT_EQ(result[i].text_, expected_result[i].text_);
@@ -105,7 +105,7 @@ TEST(SearchTest, CalculateScoreUsingBinaryAccessor) {
             {16, log(3.0 / 2), "Byeee World"},
             {28, log(3.0 / 2), "Hello Earth"}};
         const auto result = libfts::search(query, config, accessor);
-        for (size_t i = 0; i < result.size(); ++i) {
+        for (std::size_t i = 0; i < result.size(); ++i) {
             EXPECT_EQ(result[i].document_id_, expected_result[i].document_id_);
             EXPECT_EQ(result[i].score_, expected_result[i].score_);
             EXPECT_EQ(result[i].text_, expected_result[i].text_);

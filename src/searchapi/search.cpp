@@ -11,7 +11,7 @@ const char *search(
     try {
         auto *config =
             reinterpret_cast<libfts::ParserConfiguration *>(p_config);
-        auto *index = reinterpret_cast<libfts::TextIndexAccessor *>(p_index);
+        auto *index = reinterpret_cast<libfts::BinaryIndexAccessor *>(p_index);
         const auto result = libfts::get_string_search_result(
             libfts::search(query, *config, *index));
         return strdup(result.c_str());

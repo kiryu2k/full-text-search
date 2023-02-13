@@ -11,7 +11,7 @@
 namespace libfts {
 
 void IndexBuilder::add_document(
-    size_t document_id,
+    std::size_t document_id,
     const std::string &text,
     const ParserConfiguration &config) {
     /* if the document with this id has not yet been added, then add it,
@@ -33,17 +33,17 @@ parse_entry(const std::string &path, std::map<Term, Entry> &entries) {
     std::fstream file(path, std::fstream::in);
     std::string term;
     file >> term;
-    size_t doc_count = 0;
+    std::size_t doc_count = 0;
     file >> doc_count;
     Entry entry;
-    for (size_t i = 0; i < doc_count; ++i) {
-        size_t document_id = 0;
+    for (std::size_t i = 0; i < doc_count; ++i) {
+        std::size_t document_id = 0;
         file >> document_id;
         Pos position;
-        size_t pos_count = 0;
+        std::size_t pos_count = 0;
         file >> pos_count;
-        for (size_t j = 0; j < pos_count; ++j) {
-            size_t pos_num = 0;
+        for (std::size_t j = 0; j < pos_count; ++j) {
+            std::size_t pos_num = 0;
             file >> pos_num;
             position.push_back(pos_num);
         }
@@ -428,7 +428,7 @@ void BinaryIndexWriter::write(
     docs_buffer.write_to_file(file);
 }
 
-void BinaryBuffer::write(const void *data, size_t size) {
+void BinaryBuffer::write(const void *data, std::size_t size) {
     const auto *data_start_address = static_cast<const char *>(data);
     std::copy(
         data_start_address,
@@ -436,7 +436,8 @@ void BinaryBuffer::write(const void *data, size_t size) {
         std::back_inserter(data_));
 }
 
-void BinaryBuffer::write_to(const void *data, size_t size, size_t offset) {
+void BinaryBuffer::write_to(
+    const void *data, std::size_t size, std::size_t offset) {
     const auto *data_start_address = static_cast<const char *>(data);
     auto offset_iter = data_.begin();
     std::advance(offset_iter, offset);

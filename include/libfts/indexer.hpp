@@ -7,15 +7,15 @@
 
 namespace libfts {
 
-const size_t c_term_hash_size = 6;
+const std::size_t c_term_hash_size = 6;
 
 class AccessorException : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
 
-using DocId = size_t;
-using Pos = std::vector<size_t>;
+using DocId = std::size_t;
+using Pos = std::vector<std::size_t>;
 using Entry = std::map<DocId, Pos>;
 using Term = std::string;
 using Doc = std::string;
@@ -47,7 +47,7 @@ class IndexBuilder {
 
 public:
     void add_document(
-        size_t document_id,
+        std::size_t document_id,
         const std::string &text,
         const ParserConfiguration &config);
     Index get_index() { return index_; }
@@ -158,8 +158,8 @@ private:
     std::vector<char> data_;
 
 public:
-    void write(const void *data, size_t size);
-    void write_to(const void *data, size_t size, size_t offset);
+    void write(const void *data, std::size_t size);
+    void write_to(const void *data, std::size_t size, std::size_t offset);
     void write_to_file(std::ofstream &file) const;
     std::size_t size() const { return data_.size(); }
 };

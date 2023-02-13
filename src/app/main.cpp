@@ -13,15 +13,15 @@ static void launch_indexer(
     const libfts::ParserConfiguration &config,
     const std::filesystem::path &index_dir) {
     libfts::IndexBuilder indexer;
-    const size_t column_count = 3;
+    const std::size_t column_count = 3;
     io::CSVReader<column_count> csv(csv_file);
     csv.read_header(
         io::ignore_extra_column, "bookID", "title", "language_code");
     libfts::DocId document_id = 0;
     libfts::Doc text;
     std::string language;
-    size_t count = 0;
-    const size_t output_freq = 500;
+    std::size_t count = 0;
+    const std::size_t output_freq = 500;
     while (csv.read_row(document_id, text, language)) {
         if ((language == "eng" || language == "en-US")) {
             indexer.add_document(document_id, text, config);

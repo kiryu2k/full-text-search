@@ -39,8 +39,8 @@ ParserConfiguration load_config(const std::filesystem::path &filename) {
     const auto stop_words = config["stop_words"].get<std::set<std::string>>();
     return {
         stop_words,
-        {static_cast<size_t>(min_ngram_length),
-         static_cast<size_t>(max_ngram_length)},
+        {static_cast<std::size_t>(min_ngram_length),
+         static_cast<std::size_t>(max_ngram_length)},
         cutoff_factor};
 }
 
@@ -88,9 +88,9 @@ static std::vector<std::string> remove_stop_words(
 static std::vector<ParsedString> generate_ngrams(
     const std::vector<std::string> &words, const ParserConfiguration &config) {
     std::vector<ParsedString> parsed_query;
-    for (size_t i = 0; i < words.size(); ++i) {
+    for (std::size_t i = 0; i < words.size(); ++i) {
         ParsedString word;
-        for (size_t j = config.get_min_ngram_length();
+        for (std::size_t j = config.get_min_ngram_length();
              j <= config.get_max_ngram_length();
              ++j) {
             if (words[i].length() < j) {

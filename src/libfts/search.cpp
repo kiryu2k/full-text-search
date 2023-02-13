@@ -53,7 +53,7 @@ static Results cutoff_by_factor(
 
 std::string get_string_search_result(const Results &search_result) {
     std::string result;
-    size_t ordinal_num = 1;
+    std::size_t ordinal_num = 1;
     for (const auto &[document_id, score, text] : search_result) {
         result += fmt::format("{}\t{}\t{}\n", ordinal_num++, score, text);
     }
