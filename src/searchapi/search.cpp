@@ -7,7 +7,7 @@ extern "C" {
 const char *search(
     const char *query,
     ParserConfiguration *p_config,
-    TextIndexAccessor *p_index) {
+    BinaryIndexAccessor *p_index) {
     try {
         auto *config =
             reinterpret_cast<libfts::ParserConfiguration *>(p_config);
