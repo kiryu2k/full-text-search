@@ -13,15 +13,15 @@ static void launch_indexer(
     const libfts::ParserConfiguration &config,
     const std::filesystem::path &index_dir) {
     libfts::IndexBuilder indexer;
-    const size_t column_count = 3;
+    const std::size_t column_count = 3;
     io::CSVReader<column_count> csv(csv_file);
     csv.read_header(
         io::ignore_extra_column, "bookID", "title", "language_code");
     libfts::DocId document_id = 0;
     libfts::Doc text;
     std::string language;
-    size_t count = 0;
-    const size_t output_freq = 500;
+    std::size_t count = 0;
+    const std::size_t output_freq = 500;
     while (csv.read_row(document_id, text, language)) {
         if ((language == "eng" || language == "en-US")) {
             indexer.add_document(document_id, text, config);
@@ -30,7 +30,10 @@ static void launch_indexer(
             }
         }
     }
-    libfts::TextIndexWriter::write(index_dir, indexer.get_index());
+    // libfts::TextIndexWriter text_writer;
+    // text_writer.write(index_dir, indexer.get_index());
+    libfts::BinaryIndexWriter binary_writer;
+    binary_writer.write(index_dir, indexer.get_index());
 }
 
 static void launch_searcher(
@@ -38,8 +41,10 @@ static void launch_searcher(
     const std::filesystem::path &index_dir,
     const std::string &query) {
     try {
-        const libfts::IndexAccessor accessor(
-            libfts::TextIndexReader::read(index_dir));
+        // const libfts::TextIndexAccessor accessor(index_dir);
+        libfts::BinaryData index(index_dir);
+        libfts::Header header(index.data());
+        libfts::BinaryIndexAccessor accessor(index.data(), header);
         const auto result = libfts::search(query, config, accessor);
         fmt::print("{}", libfts::get_string_search_result(result));
     } catch (const libfts::AccessorException &ex) {

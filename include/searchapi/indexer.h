@@ -4,19 +4,17 @@
 extern "C" {
 #endif
 
-typedef struct Index Index;
+typedef struct BinaryData BinaryData;
 
-typedef struct IndexAccessor IndexAccessor;
+typedef struct BinaryIndexAccessor BinaryIndexAccessor;
 
-Index *index_new();
+BinaryData *binary_data_map(const char *data_path);
 
-void index_delete(Index *p_idx);
+void binary_data_unmap(BinaryData *p_data);
 
-IndexAccessor *index_accessor_new(Index *p_idx);
+BinaryIndexAccessor *index_accessor_new(BinaryData *p_index);
 
-void index_accessor_delete(IndexAccessor *p_accessor);
-
-void text_index_read(Index *p_idx, const char *path);
+void index_accessor_delete(BinaryIndexAccessor *p_accessor);
 
 #ifdef __cplusplus
 }

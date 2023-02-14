@@ -5,11 +5,13 @@
 
 extern "C" {
 const char *search(
-    const char *query, ParserConfiguration *p_config, IndexAccessor *p_index) {
+    const char *query,
+    ParserConfiguration *p_config,
+    BinaryIndexAccessor *p_index) {
     try {
         auto *config =
             reinterpret_cast<libfts::ParserConfiguration *>(p_config);
-        auto *index = reinterpret_cast<libfts::IndexAccessor *>(p_index);
+        auto *index = reinterpret_cast<libfts::BinaryIndexAccessor *>(p_index);
         const auto result = libfts::get_string_search_result(
             libfts::search(query, *config, *index));
         return strdup(result.c_str());

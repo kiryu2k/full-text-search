@@ -7,7 +7,7 @@ static std::string
 get_string_ngrams(const std::vector<libfts::ParsedString> &words) {
     std::string string_ngrams;
     for (const auto &word : words) {
-        size_t pos = word.text_position_;
+        std::size_t pos = word.text_position_;
         for (const auto &ngram : word.ngrams_) {
             string_ngrams += ngram + " " + std::to_string(pos) + " ";
         }

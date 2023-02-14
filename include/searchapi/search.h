@@ -8,7 +8,9 @@ extern "C" {
 #endif
 
 const char *search(
-    const char *query, ParserConfiguration *p_config, IndexAccessor *p_index);
+    const char *query,
+    ParserConfiguration *p_config,
+    BinaryIndexAccessor *p_index);
 
 void search_result_delete(char *search_result);
 #ifdef __cplusplus
