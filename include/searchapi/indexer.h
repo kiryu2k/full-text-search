@@ -4,11 +4,17 @@
 extern "C" {
 #endif
 
-typedef struct TextIndexAccessor TextIndexAccessor;
+typedef struct BinaryData BinaryData;
 
-TextIndexAccessor *index_accessor_new(const char *index_path);
+typedef struct BinaryIndexAccessor BinaryIndexAccessor;
 
-void index_accessor_delete(TextIndexAccessor *p_accessor);
+BinaryData *binary_data_map(const char *data_path);
+
+void binary_data_unmap(BinaryData *p_data);
+
+BinaryIndexAccessor *index_accessor_new(BinaryData *p_index);
+
+void index_accessor_delete(BinaryIndexAccessor *p_accessor);
 
 #ifdef __cplusplus
 }

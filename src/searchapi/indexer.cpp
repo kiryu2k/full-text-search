@@ -3,14 +3,23 @@
 
 extern "C" {
 
-TextIndexAccessor *index_accessor_new(const char *index_path) {
+BinaryData *binary_data_map(const char *data_path) {
+    auto *binary_data = new libfts::BinaryData(data_path);
+    return reinterpret_cast<BinaryData *>(binary_data);
+}
+
+void binary_data_unmap(BinaryData *p_data) {
+    auto *data = reinterpret_cast<libfts::BinaryData *>(p_data);
+    delete data;
+}
+
+BinaryIndexAccessor *index_accessor_new(BinaryData *p_index) {
     try {
-        // (＋_＋) ＼(〇_ｏ)／
-        const libfts::BinaryData index(index_path);
-        libfts::Header header(index.data());
-        auto *accessor = new libfts::BinaryIndexAccessor(index.data(), header);
+        const auto *index = reinterpret_cast<libfts::BinaryData *>(p_index);
+        libfts::Header header(index->data());
+        auto *accessor = new libfts::BinaryIndexAccessor(index->data(), header);
         // auto *accessor = new libfts::TextIndexAccessor(index_path);
-        return reinterpret_cast<TextIndexAccessor *>(accessor);
+        return reinterpret_cast<BinaryIndexAccessor *>(accessor);
     } catch (const libfts::AccessorException &ex) {
         return nullptr;
     } catch (const std::filesystem::__cxx11::filesystem_error &ex) {
@@ -18,7 +27,7 @@ TextIndexAccessor *index_accessor_new(const char *index_path) {
     }
 }
 
-void index_accessor_delete(TextIndexAccessor *p_accessor) {
+void index_accessor_delete(BinaryIndexAccessor *p_accessor) {
     auto *accessor =
         reinterpret_cast<libfts::BinaryIndexAccessor *>(p_accessor);
     delete accessor;

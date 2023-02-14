@@ -11,10 +11,19 @@ parser_config_new.argtypes = [ctypes.c_char_p]
 parser_config_del = search_lib.parser_configuration_delete
 parser_config_del.argtypes = [ctypes.c_void_p]
 
+# map binary data
+b_data_map = search_lib.binary_data_map
+b_data_map.restype = ctypes.c_void_p
+b_data_map.argtypes = [ctypes.c_char_p]
+
+# unmap binary data
+b_data_unmap = search_lib.binary_data_unmap
+b_data_unmap.argtypes = [ctypes.c_void_p]
+
 # create index accessor object
 index_accessor_new = search_lib.index_accessor_new
 index_accessor_new.restype = ctypes.c_void_p
-index_accessor_new.argtypes = [ctypes.c_char_p]
+index_accessor_new.argtypes = [ctypes.c_void_p]
 
 # delete index accessor object
 index_accessor_del = search_lib.index_accessor_delete
@@ -37,9 +46,17 @@ class ParserConfiguration:
         parser_config_del(self.obj)
 
 
-class IndexAccessor:
+class BinaryData:
     def __init__(self, index_dir: str) -> None:
-        self.obj = index_accessor_new(index_dir.encode("utf-8"))
+        self.obj = b_data_map(index_dir.encode("utf-8"))
+
+    def __del__(self) -> None:
+        b_data_unmap(self.obj)
+
+
+class IndexAccessor:
+    def __init__(self, index: BinaryData) -> None:
+        self.obj = index_accessor_new(index.obj)
 
     def __del__(self) -> None:
         index_accessor_del(self.obj)

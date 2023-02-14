@@ -6,7 +6,8 @@ import os
 
 def main(args) -> None:
     config = fts.ParserConfiguration("ParserConfig.json")
-    accessor = fts.IndexAccessor(args.index_dir)
+    index_data = fts.BinaryData(args.index_dir)
+    accessor = fts.IndexAccessor(index_data)
     os.system("clear")
     # enter 'q.' to exit
     while True:
