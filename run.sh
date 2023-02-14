@@ -1,6 +1,5 @@
-DEBUG_DIR=/build/build
-if [ ! -d "$DEBUG_DIR" ];
-then
+DEBUG_DIR="build/debug"
+if [ ! -d "$DEBUG_DIR" ]; then
     cmake --preset debug
 fi
 cmake --build --preset debug
